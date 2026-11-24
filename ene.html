@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart AI Platform | วิทยาลัยเทคโนโลยีอีสานเหนือ</title>
+  <!-- Tailwind CSS & Font Awesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Kanit', sans-serif; }
+    .chat-scroll::-webkit-scrollbar { width: 6px; }
+    .chat-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+    /* Avatar Animation */
+    .avatar-float { animation: floatIdle 3s ease-in-out infinite; }
+    @keyframes floatIdle { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-7px); } }
+
+    .eye-blink { transform-origin: center; animation: blink 4s infinite; }
+    @keyframes blink { 0%, 96%, 100% { transform: scaleY(1); } 98% { transform: scaleY(0.1); } }
+
+    /* Lip-sync with dynamic speed variable */
+    .mouth-speaking {
+      animation: lipSync var(--mouth-speed, 0.22s) infinite alternate ease-in-out;
+      transform-origin: 50% 70%;
+    }
+    @keyframes lipSync {
+      0% { transform: scaleY(0.2) scaleX(0.8); }
+      100% { transform: scaleY(1.5) scaleX(1.15); }
+    }
+
+    .glow-ring { animation: ringGlow 2s infinite ease-in-out; }
+    @keyframes ringGlow {
+      0%, 100% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+      50% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.8); }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-emerald-800 via-teal-800 to-emerald-950 text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center space-x-3">
+        <div class="w-11 h-11 bg-white text-emerald-800 font-extrabold rounded-xl flex items-center justify-center text-xl shadow-md border-2 border-emerald-400">
+          EN
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-base sm:text-lg font-bold tracking-tight" id="txt-header-title">วิทยาลัยเทคโนโลยีอีสานเหนือ</h1>
+            <span class="text-xs bg-emerald-600/60 px-2 py-0.5 rounded border border-emerald-400/40 text-emerald-100">E-SARNTECH</span>
+          </div>
+          <p class="text-xs text-emerald-200" id="txt-header-sub">แพลตฟอร์มผู้ช่วยอัจฉริยะ AI เพื่อบริการข้อมูลและเตรียมความพร้อมสู่สายอาชีพ</p>
+        </div>
+      </div>
+
+      <!-- Controls: Language & Status -->
+      <div class="flex items-center space-x-3">
+        <button onclick="toggleLanguage()" class="flex items-center space-x-1.5 bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition shadow-sm">
+          <i class="fas fa-globe text-emerald-300"></i>
+          <span id="lang-btn-text">TH / EN</span>
+        </button>
+
+        <span class="hidden sm:inline-flex items-center px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-xs">
+          <span class="w-2 h-2 mr-1.5 bg-emerald-400 rounded-full animate-pulse"></span> RAG & Avatar Active
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Slogan Banner -->
+  <div class="bg-emerald-900 text-emerald-100 text-xs py-1.5 px-4 text-center border-b border-emerald-800">
+    <span id="txt-slogan">อัตลักษณ์: <em>"เราไม่ได้สร้างอัจฉริยะ แต่เราสร้างคนที่สถานประกอบการอยากได้"</em></span>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="bg-white border-b sticky top-[65px] z-40 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 flex space-x-2 overflow-x-auto">
+      <button onclick="switchTab('info')" id="tab-btn-info" class="py-3 px-4 font-medium border-b-2 border-emerald-600 text-emerald-700 flex items-center space-x-2 text-sm whitespace-nowrap">
+        <i class="fas fa-robot text-base"></i> <span id="tab-text-info">ผู้ช่วย AI & อวตารเสมือนจริง</span>
+      </button>
+      <button onclick="switchTab('curriculum')" id="tab-btn-curriculum" class="py-3 px-4 font-medium border-b-2 border-transparent text-slate-600 hover:text-emerald-700 flex items-center space-x-2 text-sm whitespace-nowrap">
+        <i class="fas fa-graduation-cap text-base"></i> <span id="tab-text-curriculum">หลักสูตร & ค่าธรรมเนียม</span>
+      </button>
+      <button onclick="switchTab('career')" id="tab-btn-career" class="py-3 px-4 font-medium border-b-2 border-transparent text-slate-600 hover:text-emerald-700 flex items-center space-x-2 text-sm whitespace-nowrap">
+        <i class="fas fa-briefcase text-base"></i> <span id="tab-text-career">เตรียมความพร้อมสู่สายอาชีพ</span>
+      </button>
+      <button onclick="switchTab('admin')" id="tab-btn-admin" class="py-3 px-4 font-medium border-b-2 border-transparent text-slate-600 hover:text-emerald-700 flex items-center space-x-2 text-sm whitespace-nowrap">
+        <i class="fas fa-database text-base"></i> <span id="tab-text-admin">จัดการฐานความรู้ (Admin RAG)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto p-4 sm:p-6 flex-1 w-full">
+
+    <!-- ==================== TAB 1: Chatbot & Interactive Avatar ==================== -->
+    <section id="tab-info" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- Avatar & Controls Panel -->
+      <div class="lg:col-span-5 bg-white p-5 rounded-3xl border shadow-sm flex flex-col items-center justify-between text-center relative">
+        <div class="w-full flex justify-between items-center text-xs mb-2">
+          <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full font-semibold">
+            <i class="fas fa-id-badge text-emerald-600 mr-1"></i> <span id="txt-avatar-name">พี่สมาร์ท อีสานเหนือ</span>
+          </span>
+          <span id="avatar-status-pill" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full font-semibold border border-emerald-200">
+            ● พร้อมสนทนา
+          </span>
+        </div>
+
+        <!-- SVG Mascot Avatar -->
+        <div class="relative my-3 flex items-center justify-center">
+          <div class="w-52 h-52 rounded-full bg-gradient-to-tr from-emerald-400/20 via-teal-300/30 to-blue-400/20 absolute -z-10 blur-xl"></div>
+          <div id="avatar-glow" class="w-48 h-48 rounded-full bg-gradient-to-b from-emerald-600 to-teal-800 p-1 shadow-2xl flex items-center justify-center avatar-float glow-ring">
+            <div class="w-full h-full bg-slate-900 rounded-full overflow-hidden relative flex items-center justify-center">
+              <svg viewBox="0 0 200 200" class="w-40 h-40 drop-shadow-lg">
+                <path d="M40 90 Q100 20 160 90 Q170 120 160 140 Q100 165 40 140 Z" fill="#1e293b"/>
+                <path d="M50 80 Q100 35 150 80 Q130 50 100 50 Q70 50 50 80 Z" fill="#047857"/>
+                <rect x="55" y="65" width="90" height="85" rx="35" fill="#fed7aa"/>
+                <circle cx="68" cy="115" r="7" fill="#fb7185" opacity="0.6"/>
+                <circle cx="132" cy="115" r="7" fill="#fb7185" opacity="0.6"/>
+                <g class="eye-blink">
+                  <ellipse cx="78" cy="98" rx="8" ry="11" fill="#0f172a"/>
+                  <circle cx="80" cy="94" r="3.5" fill="#ffffff"/>
+                  <ellipse cx="122" cy="98" rx="8" ry="11" fill="#0f172a"/>
+                  <circle cx="124" cy="94" r="3.5" fill="#ffffff"/>
+                </g>
+                <rect x="64" y="86" width="28" height="22" rx="6" fill="none" stroke="#059669" stroke-width="3.5"/>
+                <rect x="108" y="86" width="28" height="22" rx="6" fill="none" stroke="#059669" stroke-width="3.5"/>
+                <line x1="92" y1="96" x2="108" y2="96" stroke="#059669" stroke-width="3.5"/>
+                <ellipse id="avatar-mouth" cx="100" cy="128" rx="10" ry="3" fill="#be123c"/>
+                <path d="M75 150 L100 170 L125 150 Z" fill="#ffffff"/>
+                <path d="M96 160 L104 160 L107 195 L100 200 L93 195 Z" fill="#047857"/>
+              </svg>
+              <div class="absolute right-6 top-14 w-3 h-10 border-r-4 border-emerald-400 rounded-r-lg"></div>
+              <div class="absolute right-9 bottom-10 w-3 h-3 bg-emerald-400 rounded-full shadow-lg shadow-emerald-400 animate-ping"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-full bg-slate-50 p-3 rounded-2xl border text-xs text-slate-600 space-y-1 mb-3">
+          <p id="avatar-caption" class="text-emerald-800 font-medium">"สวัสดีครับ ถามเรื่องค่าเทอม ปวช. หรือ ปวส. ได้เลยนะ!"</p>
+        </div>
+
+        <!-- Speech Settings -->
+        <div class="w-full bg-slate-50 p-3 rounded-2xl border text-xs space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="font-semibold text-slate-700 flex items-center">
+              <i class="fas fa-volume-up text-emerald-600 mr-1.5"></i> <span id="txt-tts-label">อ่านคำตอบออกเสียง (TTS)</span>
+            </span>
+            <input type="checkbox" id="tts-toggle" checked class="w-4 h-4 text-emerald-600 rounded">
+          </div>
+          <div class="flex items-center justify-between pt-1 border-t border-slate-200">
+            <span class="text-slate-600 font-medium" id="txt-speed-label">สปีดการพูด:</span>
+            <div class="flex items-center space-x-1">
+              <button onclick="adjustSpeed(-0.25)" class="w-7 h-7 bg-white hover:bg-emerald-100 text-slate-700 font-bold rounded-lg border shadow-sm flex items-center justify-center transition" title="ลดความเร็ว">
+                <i class="fas fa-minus text-[10px]"></i>
+              </button>
+              <span id="speed-display" class="w-12 text-center font-bold text-emerald-800 bg-white border rounded-lg py-1 shadow-inner text-xs">1.0x</span>
+              <button onclick="adjustSpeed(0.25)" class="w-7 h-7 bg-white hover:bg-emerald-100 text-slate-700 font-bold rounded-lg border shadow-sm flex items-center justify-center transition" title="เพิ่มความเร็ว">
+                <i class="fas fa-plus text-[10px]"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Screen -->
+      <div class="lg:col-span-7 bg-white rounded-3xl shadow-sm border flex flex-col h-[640px]">
+        <div class="p-4 border-b bg-slate-50 rounded-t-3xl flex justify-between items-center">
+          <div class="flex items-center space-x-2">
+            <span class="w-3 h-3 bg-emerald-500 rounded-full animate-ping"></span>
+            <h2 class="text-sm font-bold text-slate-700" id="txt-chat-header">ระบบสอบถามข้อมูลอัจฉริยะ (RAG Powered)</h2>
+          </div>
+          <button onclick="clearChat()" class="text-xs text-slate-400 hover:text-red-500">
+            <i class="fas fa-trash-alt mr-1"></i><span id="txt-clear-chat">ล้างแชท</span>
+          </button>
+        </div>
+
+        <div class="px-4 py-2.5 bg-slate-50/70 border-b flex space-x-2 overflow-x-auto text-xs whitespace-nowrap" id="quick-prompts-container"></div>
+        <div id="chat-box" class="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll"></div>
+
+        <div class="p-3.5 border-t bg-white rounded-b-3xl">
+          <div class="flex items-center space-x-2">
+            <button id="mic-btn" onclick="toggleVoiceInput()" class="p-3 rounded-2xl bg-slate-100 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 border transition" title="กดเพื่อสั่งการด้วยเสียง">
+              <i class="fas fa-microphone text-base"></i>
+            </button>
+            <input type="text" id="user-input" placeholder="พิมพ์คำถามของคุณที่นี่..." class="flex-1 border rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" onkeypress="if(event.key==='Enter') sendMessage()">
+            <button onclick="sendMessage()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-5 py-2.5 rounded-2xl text-sm font-medium transition flex items-center space-x-1.5 shadow">
+              <span id="txt-send-btn">ส่ง</span>
+              <i class="fas fa-paper-plane text-xs"></i>
+            </button>
+          </div>
+          <div id="recording-status" class="text-[11px] text-red-500 font-medium mt-1.5 ml-12 hidden animate-pulse">
+            ● <span id="txt-rec-status">กำลังฟังเสียงของคุณ...</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: Curriculum & Tuition ==================== -->
+    <section id="tab-curriculum" class="hidden space-y-6">
+      <div class="bg-white p-6 rounded-3xl border shadow-sm space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b pb-3">
+          <div>
+            <span class="text-xs font-bold text-emerald-700 uppercase tracking-wider">Tuition Fees & Funding</span>
+            <h3 class="text-lg font-bold text-slate-800" id="txt-fee-title">อัตราค่าธรรมเนียมการศึกษาและค่าเทอม</h3>
+          </div>
+          <span class="text-xs bg-emerald-50 text-emerald-800 px-3 py-1 rounded-full border border-emerald-200 font-medium" id="txt-fund-badge">
+            <i class="fas fa-check-circle text-emerald-600 mr-1"></i> รองรับกองทุน กยศ. 100%
+          </span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 text-slate-700 border-b">
+                <th class="p-3" id="th-level">ระดับการศึกษา</th>
+                <th class="p-3" id="th-major">สาขาวิชาที่เปิดสอน</th>
+                <th class="p-3 text-center" id="th-fee">ค่าเทอม / ภาคเรียน</th>
+                <th class="p-3" id="th-detail">รายละเอียดและสิทธิ์กู้ยืม</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y text-slate-600" id="tuition-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="majors-container"></div>
+    </section>
+
+    <!-- ==================== TAB 3: Career Readiness & Deep Resume Analyzer ==================== -->
+    <section id="tab-career" class="hidden space-y-6">
+      <div class="bg-white p-6 rounded-3xl border shadow-sm">
+        <h2 class="text-xl font-bold text-slate-800 mb-1" id="txt-career-title">ศูนย์เตรียมความพร้อมสู่อาชีพ (Career Readiness Hub)</h2>
+        <p class="text-sm text-slate-500" id="txt-career-sub">จำลองการสัมภาษณ์งานและวิเคราะห์เรซูเม่ด้วย AI มุ่งผลิตคนที่สถานประกอบการต้องการ</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Advanced AI Resume Analyzer -->
+        <div class="bg-white p-6 rounded-3xl border shadow-sm space-y-4">
+          <div class="flex items-center space-x-2 border-b pb-3">
+            <i class="fas fa-file-invoice text-indigo-600 text-lg"></i>
+            <h3 class="font-bold text-slate-800" id="txt-resume-title">ระบบวิเคราะห์เรซูเม่เจาะลึก (AI Resume Analyzer Pro)</h3>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1" id="txt-select-major-label">เลือกสาขาวิชาของคุณ</label>
+            <select id="resume-major" class="w-full border rounded-xl p-2.5 text-sm bg-slate-50">
+              <option value="ช่างยนต์">สาขาวิชาช่างยนต์ (Automotive)</option>
+              <option value="คอมพิวเตอร์ธุรกิจ">สาขาวิชาคอมพิวเตอร์ธุรกิจ (Digital Business)</option>
+              <option value="การบัญชี">สาขาวิชาการบัญชี (Accounting)</option>
+              <option value="การตลาด">สาขาวิชาการตลาด (Marketing)</option>
+              <option value="ดนตรี">สาขาวิชาดนตรี (Music)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1" id="txt-resume-input-label">วางเนื้อหา Resume, ทักษะวิชาชีพ, ประสบการณ์ฝึกงาน</label>
+            <textarea id="resume-input" rows="5" placeholder="..." class="w-full border rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none leading-relaxed"></textarea>
+          </div>
+          <button onclick="analyzeResume()" class="w-full bg-indigo-700 hover:bg-indigo-800 text-white py-2.5 rounded-xl font-medium text-sm transition shadow flex items-center justify-center space-x-2" id="btn-analyze-resume">
+            <i class="fas fa-chart-line"></i>
+            <span>วิเคราะห์เรซูเม่และตรวจจับทักษะ</span>
+          </button>
+          
+          <!-- Detailed Result Container -->
+          <div id="resume-output" class="hidden p-4 bg-slate-50 border rounded-2xl text-sm space-y-3"></div>
+        </div>
+
+        <!-- AI Mock Interview -->
+        <div class="bg-white p-6 rounded-3xl border shadow-sm space-y-4">
+          <div class="flex items-center space-x-2 border-b pb-3">
+            <i class="fas fa-user-tie text-emerald-600 text-lg"></i>
+            <h3 class="font-bold text-slate-800" id="txt-mock-title">จำลองการสัมภาษณ์งาน (AI Mock Interview)</h3>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1" id="txt-role-label">ตำแหน่งงานที่ต้องการสัมภาษณ์</label>
+            <div class="flex space-x-2">
+              <input type="text" id="interview-role" value="ช่างเทคนิคซ่อมบำรุง / ผู้ดูแลระบบไอที" class="flex-1 border rounded-xl px-3 py-2 text-sm bg-slate-50">
+              <button onclick="generateQuestion()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-sm font-medium" id="btn-rand-q">สุ่มคำถาม</button>
+            </div>
+          </div>
+          <div id="interview-question-box" class="p-3 bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-xl text-sm font-medium">
+            กดปุ่ม "สุ่มคำถาม" เพื่อเริ่มฝึกตอบคำถามกับพี่สมาร์ท
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1" id="txt-ans-label">คำตอบของคุณ</label>
+            <textarea id="interview-answer-input" rows="3" placeholder="..." class="w-full border rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
+          </div>
+          <button onclick="evaluateInterview()" class="w-full bg-slate-800 hover:bg-slate-900 text-white py-2.5 rounded-xl font-medium text-sm transition shadow" id="btn-eval-ans">
+            ให้ AI วิเคราะห์คำตอบ
+          </button>
+          <div id="interview-eval-output" class="hidden p-3.5 bg-slate-50 border rounded-2xl text-sm"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: Admin Knowledge Management ==================== -->
+    <section id="tab-admin" class="hidden space-y-6">
+      <div class="bg-white p-6 rounded-3xl border shadow-sm">
+        <h2 class="text-xl font-bold text-slate-800 mb-1" id="txt-admin-title">จัดการฐานความรู้ RAG (Admin Knowledge Management)</h2>
+        <p class="text-sm text-slate-500" id="txt-admin-sub">เพิ่ม ลบ หรือแก้ไขข้อมูลเอกสารเพื่อให้ AI และอวตารนำไปใช้ตอบได้อย่างถูกต้อง</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-1 bg-white p-5 rounded-3xl border shadow-sm space-y-3">
+          <h3 class="font-bold text-sm text-slate-800" id="txt-add-doc">เพิ่มเอกสารข้อมูลใหม่</h3>
+          <div>
+            <label class="text-xs text-slate-600 block mb-1" id="txt-doc-title-lbl">หัวข้อเอกสาร</label>
+            <input type="text" id="admin-title" placeholder="เช่น ทุนเรียนดีประจำปี 2569" class="w-full border rounded-xl p-2.5 text-sm">
+          </div>
+          <div>
+            <label class="text-xs text-slate-600 block mb-1" id="txt-doc-content-lbl">เนื้อหารายละเอียด</label>
+            <textarea id="admin-content" rows="4" placeholder="พิมพ์ข้อความที่ต้องการให้ AI จดจำ..." class="w-full border rounded-xl p-2.5 text-sm"></textarea>
+          </div>
+          <button onclick="addDocument()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white py-2.5 rounded-xl text-sm font-medium shadow" id="btn-save-doc">
+            บันทึกเข้าสู่ระบบ RAG
+          </button>
+        </div>
+
+        <div class="lg:col-span-2 bg-white p-5 rounded-3xl border shadow-sm">
+          <h3 class="font-bold text-sm text-slate-800 mb-3 flex items-center justify-between">
+            <span>คลังข้อมูลปัจจุบัน (<span id="doc-count">0</span> รายการ)</span>
+            <span class="text-xs font-normal text-emerald-600"><i class="fas fa-check-circle"></i> Vector Ready</span>
+          </h3>
+          <div id="knowledge-list-view" class="space-y-2.5 max-h-[420px] overflow-y-auto text-sm pr-1"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // -------------------------------------------------------------
+    // 1. STATE & MULTI-LANGUAGE DICTIONARY
+    // -------------------------------------------------------------
+    let currentLang = 'th';
+    let speechRate = 1.0;
+
+    const i18n = {
+      th: {
+        langBtn: "TH / EN",
+        headerTitle: "วิทยาลัยเทคโนโลยีอีสานเหนือ",
+        headerSub: "แพลตฟอร์มผู้ช่วยอัจฉริยะ AI เพื่อบริการข้อมูลและเตรียมความพร้อมสู่สายอาชีพ",
+        slogan: "อัตลักษณ์: <em>\"เราไม่ได้สร้างอัจฉริยะ แต่เราสร้างคนที่สถานประกอบการอยากได้\"</em>",
+        tabInfo: "ผู้ช่วย AI & อวตารเสมือนจริง",
+        tabCurriculum: "หลักสูตร & ค่าธรรมเนียม",
+        tabCareer: "เตรียมความพร้อมสู่สายอาชีพ",
+        tabAdmin: "จัดการฐานความรู้ (Admin RAG)",
+        avatarName: "พี่สมาร์ท อีสานเหนือ",
+        avatarStatusIdle: "● พร้อมสนทนา",
+        avatarStatusSpeaking: "● กำลังพูดตอบกลับ...",
+        avatarStatusThinking: "● กำลังค้นหาข้อมูล...",
+        avatarCaption: "\"สวัสดีครับ ถามเรื่องค่าเทอม ปวช. หรือ ปวส. ได้เลยนะ!\"",
+        ttsLabel: "อ่านคำตอบออกเสียง (TTS)",
+        speedLabel: "สปีดการพูด:",
+        chatHeader: "ระบบสอบถามข้อมูลอัจฉริยะ (RAG Powered)",
+        clearChat: "ล้างแชท",
+        inputPlaceholder: "พิมพ์คำถาม เช่น ค่าเทอม ปวช. กี่บาท, สาขาช่างยนต์เรียนอะไร...",
+        sendBtn: "ส่ง",
+        recStatus: "กำลังฟังเสียงของคุณ...",
+        feeTitle: "อัตราค่าธรรมเนียมการศึกษาและค่าเทอม",
+        fundBadge: "รองรับกองทุน กยศ. 100%",
+        thLevel: "ระดับการศึกษา",
+        thMajor: "สาขาวิชาที่เปิดสอน",
+        thFee: "ค่าเทอม / ภาคเรียน",
+        thDetail: "รายละเอียดและสิทธิ์กู้ยืม",
+        careerTitle: "ศูนย์เตรียมความพร้อมสู่อาชีพ (Career Readiness Hub)",
+        careerSub: "จำลองการสัมภาษณ์งานและวิเคราะห์เรซูเม่ด้วย AI มุ่งผลิตคนที่สถานประกอบการต้องการ",
+        resumeTitle: "ระบบวิเคราะห์เรซูเม่เจาะลึก (AI Resume Analyzer Pro)",
+        selectMajorLabel: "เลือกสาขาวิชาของคุณ",
+        resumeInputLabel: "วางเนื้อหา Resume, ทักษะวิชาชีพ, ประสบการณ์ฝึกงาน",
+        resumePlaceholder: "ตัวอย่าง: จบ ปวช. ช่างยนต์ ทักษะวิเคราะห์ระบบหัวฉีด EFI โอเวอร์ฮอลเครื่องยนต์ เคยฝึกงานศูนย์บริการ 4 เดือน...",
+        btnAnalyzeResume: "วิเคราะห์เรซูเม่และตรวจจับทักษะ",
+        mockTitle: "จำลองการสัมภาษณ์งาน (AI Mock Interview)",
+        roleLabel: "ตำแหน่งงานที่ต้องการสัมภาษณ์",
+        btnRandQ: "สุ่มคำถาม",
+        qBoxDefault: "กดปุ่ม \"สุ่มคำถาม\" เพื่อเริ่มฝึกตอบคำถามกับพี่สมาร์ท",
+        ansLabel: "คำตอบของคุณ",
+        ansPlaceholder: "ตอบคำถามอย่างมั่นใจที่นี่...",
+        btnEvalAns: "ให้ AI วิเคราะห์คำตอบ",
+        adminTitle: "จัดการฐานความรู้ RAG (Admin Knowledge Management)",
+        adminSub: "เพิ่ม ลบ หรือแก้ไขข้อมูลเอกสารเพื่อให้ AI และอวตารนำไปใช้ตอบได้อย่างถูกต้อง",
+        addDoc: "เพิ่มเอกสารข้อมูลใหม่",
+        docTitleLbl: "หัวข้อเอกสาร",
+        docContentLbl: "เนื้อหารายละเอียด",
+        btnSaveDoc: "บันทึกเข้าสู่ระบบ RAG",
+        quickChips: [
+          { text: "💰 ค่าเทอม ปวช./ปวส.", query: "ค่าเทอม ปวช. และ ปวส. เท่าไหร่" },
+          { text: "🎓 สาขาที่เปิดสอน", query: "เปิดสอนสาขาวิชาอะไรบ้าง" },
+          { text: "📍 ที่ตั้งวิทยาลัย", query: "วิทยาลัยตั้งอยู่ที่ไหนและติดต่ออย่างไร" },
+          { text: "📋 กองทุน กยศ.", query: "สามารถกู้ กยศ. ได้ไหม" }
+        ],
+        welcomeMsg: "สวัสดีครับน้องๆ และผู้ปกครองทุกท่าน! ผมคือ <strong>พี่สมาร์ท อวตาร AI ประจำวิทยาลัยเทคโนโลยีอีสานเหนือ</strong> ยินดีให้บริการข้อมูลหลักสูตร ค่าธรรมเนียมการศึกษา หรือแนะนำการเตรียมตัวสู่อาชีพครับ พิมพ์ถามหรือกดไมค์คุยกับผมได้เลยครับ!"
+      },
+      en: {
+        langBtn: "EN / TH",
+        headerTitle: "E-Sarn Technological College",
+        headerSub: "Intelligent AI Assistant Platform for Institutional Services and Career Readiness",
+        slogan: "Identity: <em>\"We do not just create geniuses, we build what employers truly demand.\"</em>",
+        tabInfo: "AI Assistant & Avatar",
+        tabCurriculum: "Curriculum & Tuition",
+        tabCareer: "Career Readiness Hub",
+        tabAdmin: "Knowledge Base (Admin RAG)",
+        avatarName: "Smart AI Avatar",
+        avatarStatusIdle: "● Online & Ready",
+        avatarStatusSpeaking: "● Speaking...",
+        avatarStatusThinking: "● Searching Knowledge...",
+        avatarCaption: "\"Hello! Ask me about Voc. Cert, High Voc. Cert tuition or admissions!\"",
+        ttsLabel: "Voice Response (TTS)",
+        speedLabel: "Speech Speed:",
+        chatHeader: "Smart Institutional Query System (RAG)",
+        clearChat: "Clear",
+        inputPlaceholder: "Type your query, e.g. What is the tuition fee for Voc. Cert?...",
+        sendBtn: "Send",
+        recStatus: "Listening to your voice...",
+        feeTitle: "Official Tuition Fees & Financial Aid",
+        fundBadge: "100% Student Loan Fund (SLF) Eligible",
+        thLevel: "Education Level",
+        thMajor: "Available Programs",
+        thFee: "Tuition / Semester",
+        thDetail: "Terms & Financial Aid",
+        careerTitle: "AI Career Readiness Hub",
+        careerSub: "AI Mock Interview and Resume Review to prepare career-ready graduates",
+        resumeTitle: "AI Resume Analyzer Pro",
+        selectMajorLabel: "Select Your Department",
+        resumeInputLabel: "Paste Resume or Skills Summary",
+        resumePlaceholder: "e.g., Graduated in Automotive, skills in engine diagnostics, EFI system, 4 months internship...",
+        btnAnalyzeResume: "Analyze Resume & Detect Skills",
+        mockTitle: "AI Mock Interview",
+        roleLabel: "Target Career Position",
+        btnRandQ: "Random Question",
+        qBoxDefault: "Click \"Random Question\" to start your interview practice with Smart AI",
+        ansLabel: "Your Response",
+        ansPlaceholder: "Answer professionally and with confidence...",
+        btnEvalAns: "Evaluate Answer with AI",
+        adminTitle: "RAG Knowledge Management",
+        adminSub: "Add, update or remove college documents to improve AI response accuracy",
+        addDoc: "Add New Document",
+        docTitleLbl: "Document Title",
+        docContentLbl: "Detailed Content",
+        btnSaveDoc: "Save to RAG Knowledge",
+        quickChips: [
+          { text: "💰 Tuition Fees", query: "What are the tuition fees for Voc and High Voc Cert?" },
+          { text: "🎓 Programs Offered", query: "What majors and programs are available?" },
+          { text: "📍 Campus Location", query: "Where is the college located and contact number?" },
+          { text: "📋 Student Loans (SLF)", query: "Can I apply for student loan fund?" }
+        ],
+        welcomeMsg: "Hello and welcome! I am <strong>Smart AI, the virtual avatar of E-Sarn Technological College</strong>. I am here to help you with tuition fees, program details, and career preparation. Feel free to type or speak!"
+      }
+    };
+
+    // -------------------------------------------------------------
+    // 2. KNOWLEDGE BASE (BILINGUAL RAG CORPUS)
+    // -------------------------------------------------------------
+    let knowledgeBase = [
+      {
+        id: 1,
+        title: "ค่าธรรมเนียมการศึกษา ค่าเทอม ปวช. และ ปวส. (Tuition Fees)",
+        tags: ["ค่าเทอม", "ค่าเล่าเรียน", "ราคา", "กี่บาท", "4500", "9500", "ปวช", "ปวส", "กยศ", "tuition", "fee", "cost", "price"],
+        content_th: "อัตราค่าธรรมเนียมการศึกษาของวิทยาลัยเทคโนโลยีอีสานเหนือ: ระดับ ปวช. ค่าเทอมอยู่ที่ 4,500 บาทต่อภาคเรียน และระดับ ปวส. ค่าเทอมอยู่ที่ 9,500 บาทต่อภาคเรียน ทุกระดับชั้นสามารถยื่นกู้กองทุนเงินให้กู้ยืมเพื่อการศึกษา (กยศ.) ได้เต็มจำนวน และมีระบบแบ่งผ่อนชำระเพื่อลดภาระค่าใช้จ่ายครับ",
+        content_en: "Tuition fees at E-Sarn Technological College: Vocational Certificate (Voc. Cert) is 4,500 THB per semester, and High Vocational Certificate (High Voc. Cert) is 9,500 THB per semester. All students are eligible for the Student Loan Fund (SLF) and installment plans."
+      },
+      {
+        id: 2,
+        title: "สาขาวิชาที่เปิดสอนระดับ ปวช. (Vocational Programs)",
+        tags: ["ปวช", "ม.3", "สาขา", "ช่างยนต์", "คอมพิวเตอร์", "บัญชี", "การตลาด", "ดนตรี", "programs", "vocational"],
+        content_th: "ระดับ ปวช. (3 ปี) รับผู้จบ ม.3 เปิดสอน 5 สาขาวิชา ได้แก่ สาขาวิชาช่างยนต์, สาขาวิชาคอมพิวเตอร์ธุรกิจ, สาขาวิชาการบัญชี, สาขาวิชาการตลาด และสาขาวิชาดนตรี มุ่งเน้นการปฏิบัติจริง คิดเป็น ทำเป็น",
+        content_en: "Vocational Certificate (3-Year Program for Grade 9 graduates) offers 5 programs: 1. Automotive 2. Business Digital Technology 3. Accounting 4. Marketing 5. Music. Focusing on hands-on practical skills."
+      },
+      {
+        id: 3,
+        title: "สาขาวิชาที่เปิดสอนระดับ ปวส. (High Vocational Programs)",
+        tags: ["ปวส", "ม.6", "ภาคสมทบ", "วันอาทิตย์", "คนทำงาน", "high vocational", "diploma"],
+        content_th: "ระดับ ปวส. (2 ปี) รับผู้จบ ปวช., ม.6 หรือเทียบเท่า เปิดสอนทั้งภาคปกติ (จันทร์-ศุกร์) และภาคสมทบ (เรียนวันอาทิตย์) ใน 5 สาขาวิชา ได้แก่ ช่างยนต์, คอมพิวเตอร์ธุรกิจ, การบัญชี, การตลาด และดนตรี",
+        content_en: "High Vocational Certificate (2-Year Program for Grade 12 or Voc. Cert graduates) offers regular and Sunday sessions across Automotive, Digital Business, Accounting, Marketing, and Music."
+      },
+      {
+        id: 4,
+        title: "สถานที่ตั้งและการติดต่อวิทยาลัย (Location & Contact)",
+        tags: ["ที่อยู่", "ติดต่อ", "สถานที่", "เบอร์โทร", "อุดร", "กุมภวาปี", "location", "address", "contact", "phone"],
+        content_th: "วิทยาลัยเทคโนโลยีอีสานเหนือ ตั้งอยู่ที่ 140 หมู่ที่ 11 บ้านดงไร่ ตำบลนาข่า อำเภอเมือง จังหวัดอุดรธานี โทร. 042-110160 และวิทยาเขต 2 กุมภวาปี ตั้งอยู่ที่ตำบลตูมใต้ อำเภอกุมภวาปี โทร. 042-398282 อีเมล esarntech@hotmail.com",
+        content_en: "E-Sarn Technological College is located at 140 Moo 11, Dong Rai, Na Kha, Mueang, Udon Thani 41000. Phone: 042-110160. Branch 2 at Kumphawapi, Phone: 042-398282. Email: esarntech@hotmail.com."
+      },
+      {
+        id: 5,
+        title: "อัตลักษณ์และปรัชญาของวิทยาลัย (Identity & Philosophy)",
+        tags: ["ปรัชญา", "อัตลักษณ์", "คำขวัญ", "philosophy", "identity"],
+        content_th: "อัตลักษณ์ของวิทยาลัยคือ 'เราไม่ได้สร้างอัจฉริยะ แต่เราสร้างคนที่สถานประกอบการอยากได้' ปรัชญาคือ 'มุ่งมั่น สร้างสรรค์ดี วิชาการเด่น เน้นคุณธรรม นำเทคโนโลยี' สีประจำวิทยาลัยคือ สีเขียว-ขาว",
+        content_en: "Identity: 'We do not create geniuses, we build what employers want.' Philosophy: 'Dedicated, Creative, Academic Excellence, Moral-centered, Tech-driven.' Colors: Green and White."
+      }
+    ];
+
+    // -------------------------------------------------------------
+    // 3. UI LOCALIZATION CONTROLLER
+    // -------------------------------------------------------------
+    function updateUILanguage() {
+      const t = i18n[currentLang];
+      document.getElementById("lang-btn-text").innerText = t.langBtn;
+      document.getElementById("txt-header-title").innerText = t.headerTitle;
+      document.getElementById("txt-header-sub").innerText = t.headerSub;
+      document.getElementById("txt-slogan").innerHTML = t.slogan;
+      document.getElementById("tab-text-info").innerText = t.tabInfo;
+      document.getElementById("tab-text-curriculum").innerText = t.tabCurriculum;
+      document.getElementById("tab-text-career").innerText = t.tabCareer;
+      document.getElementById("tab-text-admin").innerText = t.tabAdmin;
+      document.getElementById("txt-avatar-name").innerText = t.avatarName;
+      document.getElementById("avatar-caption").innerText = t.avatarCaption;
+      document.getElementById("txt-tts-label").innerText = t.ttsLabel;
+      document.getElementById("txt-speed-label").innerText = t.speedLabel;
+      document.getElementById("txt-chat-header").innerText = t.chatHeader;
+      document.getElementById("txt-clear-chat").innerText = t.clearChat;
+      document.getElementById("user-input").placeholder = t.inputPlaceholder;
+      document.getElementById("txt-send-btn").innerText = t.sendBtn;
+      document.getElementById("txt-rec-status").innerText = t.recStatus;
+      document.getElementById("txt-fee-title").innerText = t.feeTitle;
+      document.getElementById("txt-fund-badge").innerHTML = `<i class="fas fa-check-circle text-emerald-600 mr-1"></i> ${t.fundBadge}`;
+      document.getElementById("th-level").innerText = t.thLevel;
+      document.getElementById("th-major").innerText = t.thMajor;
+      document.getElementById("th-fee").innerText = t.thFee;
+      document.getElementById("th-detail").innerText = t.thDetail;
+      document.getElementById("txt-career-title").innerText = t.careerTitle;
+      document.getElementById("txt-career-sub").innerText = t.careerSub;
+      document.getElementById("txt-resume-title").innerText = t.resumeTitle;
+      document.getElementById("txt-select-major-label").innerText = t.selectMajorLabel;
+      document.getElementById("txt-resume-input-label").innerText = t.resumeInputLabel;
+      document.getElementById("resume-input").placeholder = t.resumePlaceholder;
+      document.getElementById("btn-analyze-resume").innerHTML = `<i class="fas fa-chart-line mr-1"></i> <span>${t.btnAnalyzeResume}</span>`;
+      document.getElementById("txt-mock-title").innerText = t.mockTitle;
+      document.getElementById("txt-role-label").innerText = t.roleLabel;
+      document.getElementById("btn-rand-q").innerText = t.btnRandQ;
+      document.getElementById("txt-ans-label").innerText = t.ansLabel;
+      document.getElementById("interview-answer-input").placeholder = t.ansPlaceholder;
+      document.getElementById("btn-eval-ans").innerText = t.btnEvalAns;
+      document.getElementById("txt-admin-title").innerText = t.adminTitle;
+      document.getElementById("txt-admin-sub").innerText = t.adminSub;
+      document.getElementById("txt-add-doc").innerText = t.addDoc;
+      document.getElementById("txt-doc-title-lbl").innerText = t.docTitleLbl;
+      document.getElementById("txt-doc-content-lbl").innerText = t.docContentLbl;
+      document.getElementById("btn-save-doc").innerText = t.btnSaveDoc;
+
+      renderQuickPrompts();
+      renderWelcomeMessage();
+      renderCurriculumTable();
+      renderKnowledgeList();
+    }
+
+    function toggleLanguage() {
+      currentLang = currentLang === 'th' ? 'en' : 'th';
+      updateUILanguage();
+    }
+
+    function renderQuickPrompts() {
+      const container = document.getElementById("quick-prompts-container");
+      const chips = i18n[currentLang].quickChips;
+      container.innerHTML = chips.map(c => `
+        <button onclick="askPreset('${c.query}')" class="px-3 py-1.5 bg-white border border-emerald-300 text-emerald-800 rounded-full hover:bg-emerald-50 shadow-sm transition">
+          ${c.text}
+        </button>
+      `).join('');
+    }
+
+    function renderWelcomeMessage() {
+      const box = document.getElementById("chat-box");
+      box.innerHTML = `
+        <div class="flex items-start space-x-3">
+          <div class="w-9 h-9 rounded-xl bg-emerald-700 text-white flex items-center justify-center font-bold text-xs shadow shrink-0">AI</div>
+          <div class="bg-slate-100 p-3.5 rounded-2xl rounded-tl-none max-w-[85%] text-sm leading-relaxed text-slate-800 shadow-sm">
+            ${i18n[currentLang].welcomeMsg}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCurriculumTable() {
+      const isTH = currentLang === 'th';
+      const body = document.getElementById("tuition-table-body");
+      body.innerHTML = `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="p-3 font-bold text-slate-800">
+            <span class="inline-block px-2 py-0.5 bg-emerald-100 text-emerald-800 text-xs rounded mr-1">${isTH ? 'ปวช.' : 'Voc. Cert'}</span> 
+            ${isTH ? 'ประกาศนียบัตรวิชาชีพ (3 ปี - รับ ม.3)' : 'Vocational Certificate (3 Years - Gr.9)'}
+          </td>
+          <td class="p-3">${isTH ? 'ช่างยนต์, คอมฯ ธุรกิจ, บัญชี, การตลาด, ดนตรี' : 'Automotive, Digital Biz, Accounting, Marketing, Music'}</td>
+          <td class="p-3 text-center font-bold text-emerald-700 text-base">4,500 ${isTH ? 'บาท' : 'THB'}</td>
+          <td class="p-3 text-xs">${isTH ? 'ยื่นกู้ กยศ. ได้เต็มจำนวน หรือแบ่งผ่อนชำระได้ตามงวด' : '100% Student Loan Fund (SLF) Eligible / Installments'}</td>
+        </tr>
+        <tr class="hover:bg-slate-50 transition">
+          <td class="p-3 font-bold text-slate-800">
+            <span class="inline-block px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded mr-1">${isTH ? 'ปวส.' : 'High Voc.'}</span> 
+            ${isTH ? 'ประกาศนียบัตรวิชาชีพชั้นสูง (2 ปี - รับ ปวช./ม.6)' : 'High Vocational Certificate (2 Years - Gr.12)'}
+          </td>
+          <td class="p-3">${isTH ? 'ช่างยนต์, คอมฯ ธุรกิจ, บัญชี, การตลาด, ดนตรี (ปกติ & สมทบ)' : 'Automotive, Digital Biz, Accounting, Marketing, Music (Regular & Sunday)'}</td>
+          <td class="p-3 text-center font-bold text-blue-700 text-base">9,500 ${isTH ? 'บาท' : 'THB'}</td>
+          <td class="p-3 text-xs">${isTH ? 'กู้ยืม กยศ. ครอบคลุมค่าเล่าเรียน / ภาคสมทบผ่อนชำระรายเดือนได้' : 'Covered by SLF / Monthly installment available'}</td>
+        </tr>
+      `;
+
+      const majorsDiv = document.getElementById("majors-container");
+      majorsDiv.innerHTML = `
+        <div class="bg-white p-6 rounded-3xl border shadow-sm space-y-3">
+          <h4 class="font-bold text-slate-800 border-b pb-2 flex items-center">
+            <i class="fas fa-graduation-cap text-emerald-600 mr-2"></i> ${isTH ? 'สาขาในระดับ ปวช. (รับผู้จบ ม.3)' : 'Vocational Certificate Programs'}
+          </h4>
+          <ul class="text-sm space-y-2 text-slate-600">
+            <li><strong>1. ${isTH ? 'สาขาวิชาช่างยนต์' : 'Automotive'}</strong>: ${isTH ? 'ทักษะยานยนต์ เครื่องกล และการซ่อมบำรุง' : 'Engine maintenance and modern automotive tech'}</li>
+            <li><strong>2. ${isTH ? 'สาขาวิชาคอมพิวเตอร์ธุรกิจ' : 'Digital Business'}</strong>: ${isTH ? 'นวัตกรรมดิจิทัล สารสนเทศ และกราฟิก' : 'Digital systems, business IT and design'}</li>
+            <li><strong>3. ${isTH ? 'สาขาวิชาการบัญชี' : 'Accounting'}</strong>: ${isTH ? 'ระบบบัญชีธุรกิจและโปรแกรมสำเร็จรูป' : 'Financial reporting and software'}</li>
+            <li><strong>4. ${isTH ? 'สาขาวิชาการตลาด' : 'Marketing'}</strong>: ${isTH ? 'การค้าออนไลน์ กลยุทธ์การขาย และการจัดการ' : 'Digital marketing and retail management'}</li>
+            <li><strong>5. ${isTH ? 'สาขาวิชาดนตรี' : 'Music'}</strong>: ${isTH ? 'ทฤษฎีดนตรี การแสดง และการควบคุมเสียง' : 'Music performance and studio engineering'}</li>
+          </ul>
+        </div>
+
+        <div class="bg-white p-6 rounded-3xl border shadow-sm space-y-3">
+          <h4 class="font-bold text-slate-800 border-b pb-2 flex items-center">
+            <i class="fas fa-user-graduate text-blue-600 mr-2"></i> ${isTH ? 'สาขาในระดับ ปวส. (รับผู้จบ ปวช. / ม.6)' : 'High Vocational Certificate Programs'}
+          </h4>
+          <p class="text-xs text-slate-500 mb-2">${isTH ? 'เปิดทั้ง ภาคปกติ (จันทร์ - ศุกร์) และ ภาคสมทบ (วันอาทิตย์)' : 'Available: Full-time (Mon-Fri) & Part-time (Sunday)'}</p>
+          <ul class="text-sm space-y-2 text-slate-600">
+            <li><strong>1. ${isTH ? 'สาขาวิชาช่างยนต์' : 'Advanced Automotive'}</strong>: ${isTH ? 'ช่างเทคนิคขั้นสูง วินิจฉัยระบบยานยนต์' : 'Advanced diagnostics and electronic vehicle tech'}</li>
+            <li><strong>2. ${isTH ? 'สาขาวิชาคอมพิวเตอร์ธุรกิจ' : 'Advanced Digital Tech'}</strong>: ${isTH ? 'พัฒนาโปรแกรม ซอฟต์แวร์ และฐานข้อมูล' : 'Application and database management'}</li>
+            <li><strong>3. ${isTH ? 'สาขาวิชาการบัญชี' : 'Advanced Accounting'}</strong>: ${isTH ? 'การตรวจสอบบัญชีและการจัดการภาษีอากร' : 'Auditing and taxation planning'}</li>
+            <li><strong>4. ${isTH ? 'สาขาวิชาการตลาด' : 'Modern Marketing'}</strong>: ${isTH ? 'บริหารธุรกิจและนักการตลาดยุคดิจิทัล' : 'Strategic marketing and digital branding'}</li>
+            <li><strong>5. ${isTH ? 'สาขาวิชาดนตรี' : 'Professional Music'}</strong>: ${isTH ? 'ผู้เชี่ยวชาญการแสดงดนตรีและสตูดิโอ' : 'Music production and audio management'}</li>
+          </ul>
+        </div>
+      `;
+    }
+
+    // -------------------------------------------------------------
+    // 4. SPEECH SPEED CONTROLLER
+    // -------------------------------------------------------------
+    function adjustSpeed(delta) {
+      speechRate = Math.round((speechRate + delta) * 100) / 100;
+      if (speechRate < 0.75) speechRate = 0.75;
+      if (speechRate > 2.0) speechRate = 2.0;
+      document.getElementById("speed-display").innerText = speechRate.toFixed(2) + "x";
+
+      const mouthDuration = (0.22 / speechRate).toFixed(3) + "s";
+      document.documentElement.style.setProperty('--mouth-speed', mouthDuration);
+    }
+
+    // -------------------------------------------------------------
+    // 5. AVATAR STATE CONTROLLER
+    // -------------------------------------------------------------
+    const avatarMouth = document.getElementById("avatar-mouth");
+    const avatarStatusPill = document.getElementById("avatar-status-pill");
+    const avatarCaption = document.getElementById("avatar-caption");
+
+    function setAvatarState(state, captionText = "") {
+      const t = i18n[currentLang];
+      if (state === "speaking") {
+        avatarMouth.classList.add("mouth-speaking");
+        avatarStatusPill.className = "px-2.5 py-1 bg-emerald-500 text-white rounded-full font-semibold shadow animate-pulse";
+        avatarStatusPill.innerHTML = t.avatarStatusSpeaking;
+        if (captionText) avatarCaption.innerText = `"${captionText.slice(0, 55)}..."`;
+      } else if (state === "thinking") {
+        avatarMouth.classList.remove("mouth-speaking");
+        avatarStatusPill.className = "px-2.5 py-1 bg-amber-50 text-amber-800 rounded-full font-semibold border border-amber-300";
+        avatarStatusPill.innerHTML = t.avatarStatusThinking;
+        avatarCaption.innerText = currentLang === 'th' ? "กำลังประมวลผลคำตอบจากฐานข้อมูล..." : "Searching college knowledge base...";
+      } else {
+        avatarMouth.classList.remove("mouth-speaking");
+        avatarStatusPill.className = "px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full font-semibold border border-emerald-200";
+        avatarStatusPill.innerHTML = t.avatarStatusIdle;
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 6. RAG RETRIEVAL & CHAT LOGIC
+    // -------------------------------------------------------------
+    function retrieveContext(query) {
+      const q = query.toLowerCase();
+      let scoredDocs = knowledgeBase.map(doc => {
+        let score = 0;
+        doc.tags.forEach(t => { if (q.includes(t.toLowerCase())) score += 3; });
+        if (doc.title.toLowerCase().includes(q)) score += 5;
+        const text = (currentLang === 'th' ? doc.content_th : doc.content_en).toLowerCase();
+        if (text.includes(q)) score += 2;
+        return { ...doc, score };
+      });
+      scoredDocs.sort((a, b) => b.score - a.score);
+      return scoredDocs.filter(d => d.score > 0);
+    }
+
+    function sendMessage() {
+      const input = document.getElementById("user-input");
+      const text = input.value.trim();
+      if (!text) return;
+
+      appendMessage("user", text);
+      input.value = "";
+      setAvatarState("thinking");
+
+      setTimeout(() => {
+        const matched = retrieveContext(text);
+        let answer = "";
+
+        if (matched.length > 0) {
+          answer = currentLang === 'th' ? matched[0].content_th : matched[0].content_en;
+        } else if (text.includes("สวัสดี") || text.toLowerCase().includes("hello") || text.toLowerCase().includes("hi")) {
+          answer = currentLang === 'th'
+            ? "สวัสดีครับ! ผมคือพี่สมาร์ท อวตาร AI ประจำวิทยาลัยเทคโนโลยีอีสานเหนือ สอบถามค่าเทอม หลักสูตร หรือการเรียนต่อได้เลยครับ"
+            : "Hello! I am Smart AI from E-Sarn Technological College. How may I assist you with programs, fees, or admissions today?";
+        } else {
+          answer = currentLang === 'th'
+            ? `สำหรับข้อซักถามเกี่ยวกับ "${text}" แนะนำติดต่อฝ่ายแนะแนวโดยตรงที่เบอร์ 042-110160 เพื่อรับข้อมูลล่าสุดครับ`
+            : `Regarding "${text}", please contact our advisory office directly at 042-110160 for official details.`;
+        }
+
+        appendMessage("ai", answer);
+        
+        if (document.getElementById("tts-toggle").checked) {
+          speakWithAvatar(answer);
+        } else {
+          setAvatarState("idle");
+        }
+      }, 350);
+    }
+
+    function askPreset(promptText) {
+      document.getElementById("user-input").value = promptText;
+      sendMessage();
+    }
+
+    function appendMessage(sender, text) {
+      const box = document.getElementById("chat-box");
+      const isAI = sender === "ai";
+      const div = document.createElement("div");
+      div.className = `flex items-start space-x-3 ${isAI ? '' : 'flex-row-reverse space-x-reverse'}`;
+      div.innerHTML = `
+        <div class="w-9 h-9 rounded-xl ${isAI ? 'bg-emerald-700' : 'bg-slate-700'} text-white flex items-center justify-center font-bold text-xs shadow shrink-0">
+          ${isAI ? 'AI' : (currentLang === 'th' ? 'คุณ' : 'You')}
+        </div>
+        <div class="${isAI ? 'bg-slate-100 text-slate-800' : 'bg-emerald-700 text-white'} p-3.5 rounded-2xl ${isAI ? 'rounded-tl-none' : 'rounded-tr-none'} max-w-[85%] text-sm leading-relaxed whitespace-pre-line shadow-sm">
+          ${text}
+        </div>
+      `;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function clearChat() {
+      renderWelcomeMessage();
+    }
+
+    // -------------------------------------------------------------
+    // 7. TEXT-TO-SPEECH (TTS) & LIP SYNC
+    // -------------------------------------------------------------
+    function speakWithAvatar(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const clean = text.replace(/\[.*?\]/g, "").replace(/\(.*?\)/g, "").replace(/•/g, "");
+        const utterance = new SpeechSynthesisUtterance(clean);
+        utterance.lang = currentLang === 'th' ? 'th-TH' : 'en-US';
+        utterance.rate = speechRate;
+
+        utterance.onstart = () => {
+          setAvatarState("speaking", clean);
+        };
+        utterance.onend = () => {
+          setAvatarState("idle");
+        };
+        utterance.onerror = () => {
+          setAvatarState("idle");
+        };
+
+        window.speechSynthesis.speak(utterance);
+      } else {
+        setAvatarState("idle");
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 8. SPEECH-TO-TEXT (STT)
+    // -------------------------------------------------------------
+    let recognition;
+    let listening = false;
+    function toggleVoiceInput() {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        alert(currentLang === 'th' ? "เบราว์เซอร์นี้ยังไม่รองรับ แนะนำให้ใช้ Google Chrome ครับ" : "Browser not supported. Please use Google Chrome.");
+        return;
+      }
+      const mic = document.getElementById("mic-btn");
+      const status = document.getElementById("recording-status");
+
+      if (!listening) {
+        recognition = new SR();
+        recognition.lang = currentLang === 'th' ? 'th-TH' : 'en-US';
+        recognition.onstart = () => {
+          listening = true;
+          mic.classList.add('bg-red-500', 'text-white');
+          status.classList.remove('hidden');
+        };
+        recognition.onresult = (e) => {
+          document.getElementById("user-input").value = e.results[0][0].transcript;
+          sendMessage();
+        };
+        recognition.onend = () => {
+          listening = false;
+          mic.classList.remove('bg-red-500', 'text-white');
+          status.classList.add('hidden');
+        };
+        recognition.start();
+      } else {
+        recognition.stop();
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 9. ADVANCED RESUME ANALYZER (เจาะลึก 5 สาขาวิชา)
+    // -------------------------------------------------------------
+    const majorSkillStandards = {
+      "ช่างยนต์": {
+        skills: ["ซ่อมเครื่องยนต์", "โอเวอร์ฮอล", "ระบบส่งกำลัง", "หัวฉีด", "efi", "เบรก", "ช่วงล่าง", "obd", "วินิจฉัย", "เปลี่ยนถ่ายน้ำมันเครื่อง", "ไฟฟ้ายานยนต์", "ปรับแต่ง"],
+        recommended: "เครื่องสแกน OBD-II, การบำรุงรักษายานยนต์ไฟฟ้า (EV), ใบประกอบวิชาชีพช่างยนต์"
+      },
+      "คอมพิวเตอร์ธุรกิจ": {
+        skills: ["html", "css", "javascript", "python", "php", "sql", "excel", "photoshop", "canva", "network", "ดูแลระบบ", "เว็บไซต์", "ซ่อมคอม", "database", "it support"],
+        recommended: "การเขียนโค้ด Web App, วิเคราะห์ข้อมูล Data Analysis, การตลาดดิจิทัลและ SEO"
+      },
+      "การบัญชี": {
+        skills: ["express", "งบการเงิน", "บัญชี", "ภาษี", "ภงด", "ภพ30", "เดบิต", "เครดิต", "excel", "ตรวจนับสต็อก", "ใบเสร็จ", "งบดุล", "งบกำไรขาดทุน"],
+        recommended: "โปรแกรมบัญชีคลาวด์ FlowAccount/Peak, การวางแผนภาษีนิติบุคคล, CPD/ใบรับรองวิชาชีพบัญชี"
+      },
+      "การตลาด": {
+        skills: ["ยิงแอด", "facebook ads", "tiktok", "content", "คอนเทนต์", "ปิดการขาย", "บริการลูกค้า", "เจรจา", "วิเคราะห์ตลาด", "กราฟิก", "live", "ขายออนไลน์"],
+        recommended: "การทำ Data-driven Marketing, ยิงโฆษณา TikTok Shop/Google Ads, การทำคลิปสั้น Short-form Video"
+      },
+      "ดนตรี": {
+        skills: ["เครื่องสาย", "เปียโน", "กลอง", "กีตาร์", "ร้องเพลง", "ทฤษฎีดนตรี", "cubase", "logic", "ห้องอัด", "มิกซ์เสียง", "sound", "การแสดง", "วงดนตรี"],
+        recommended: "โปรแกรมทำเพลง DAW ระดับโปร, การทำ Sound Design สำหรับสื่อภาพยนตร์, การบริหารค่ายเพลงออนไลน์"
+      }
+    };
+
+    function analyzeResume() {
+      const text = document.getElementById("resume-input").value.trim();
+      const major = document.getElementById("resume-major").value;
+      const out = document.getElementById("resume-output");
+      if (!text) return alert(currentLang === 'th' ? "กรุณาใส่ข้อความเรซูเม่เพื่อทำการประเมิน" : "Please enter your resume content");
+
+      const standard = majorSkillStandards[major] || { skills: [], recommended: "" };
+      const lower = text.toLowerCase();
+
+      // Scan matching keywords
+      let matchedSkills = [];
+      standard.skills.forEach(s => {
+        if (lower.includes(s.toLowerCase())) {
+          matchedSkills.push(s);
+        }
+      });
+
+      // Calculate score based on text length, detected skills, and internship keywords
+      let baseScore = 50;
+      baseScore += Math.min(matchedSkills.length * 8, 35);
+      if (lower.includes("ฝึกงาน") || lower.includes("intern") || lower.includes("ประสบการณ์")) baseScore += 10;
+      if (text.length > 120) baseScore += 5;
+      const finalScore = Math.min(baseScore, 98);
+
+      let grade = "C";
+      let gradeColor = "text-amber-600 bg-amber-50 border-amber-200";
+      if (finalScore >= 85) { grade = "A"; gradeColor = "text-emerald-700 bg-emerald-50 border-emerald-200"; }
+      else if (finalScore >= 75) { grade = "B"; gradeColor = "text-blue-700 bg-blue-50 border-blue-200"; }
+
+      out.classList.remove('hidden');
+      if (currentLang === 'th') {
+        out.innerHTML = `
+          <div class="flex items-center justify-between border-b pb-2">
+            <div>
+              <span class="text-xs text-slate-500">ผลการวิเคราะห์เฉพาะทาง</span>
+              <h4 class="font-bold text-slate-800 text-base">สาขาวิชา${major}</h4>
+            </div>
+            <div class="text-right">
+              <span class="inline-block px-3 py-1 rounded-xl font-bold border text-sm ${gradeColor}">เกรด ${grade} (${finalScore}/100)</span>
+            </div>
+          </div>
+
+          <div class="space-y-1.5 text-xs">
+            <p class="font-semibold text-slate-700"><i class="fas fa-check-circle text-emerald-600 mr-1"></i> ทักษะตรงสายที่ตรวจพบ (${matchedSkills.length} ทักษะ):</p>
+            <div class="flex flex-wrap gap-1 pt-1">
+              ${matchedSkills.length > 0 
+                ? matchedSkills.map(s => `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md font-medium text-[11px]">${s}</span>`).join('') 
+                : '<span class="text-slate-400">ยังไม่พบ Keyword ทักษะเฉพาะทางชัดเจน แนะนำให้ระบุเครื่องมือหรือระบบที่เคยลงมือทำ</span>'}
+            </div>
+          </div>
+
+          <div class="bg-indigo-50/70 p-3 rounded-xl border border-indigo-100 text-xs space-y-1">
+            <p class="font-bold text-indigo-900"><i class="fas fa-lightbulb text-amber-500 mr-1"></i> คำแนะนำเพื่อคว้าโอกาสได้งานทำ 100%:</p>
+            <p class="text-slate-600">• เพิ่มทักษะขั้นสูงที่สถานประกอบการกำลังมองหา: <strong>${standard.recommended}</strong></p>
+            <p class="text-slate-600">• ควรระบุผลลัพธ์เป็นตัวเลข เช่น "ลดเวลาซ่อมบำรุง 20%" หรือ "เพิ่มยอดขาย 15%"</p>
+          </div>
+        `;
+      } else {
+        out.innerHTML = `
+          <div class="flex items-center justify-between border-b pb-2">
+            <div>
+              <span class="text-xs text-slate-500">Specialized Evaluation</span>
+              <h4 class="font-bold text-slate-800 text-base">${major} Program</h4>
+            </div>
+            <div class="text-right">
+              <span class="inline-block px-3 py-1 rounded-xl font-bold border text-sm ${gradeColor}">Grade ${grade} (${finalScore}/100)</span>
+            </div>
+          </div>
+
+          <div class="space-y-1.5 text-xs">
+            <p class="font-semibold text-slate-700"><i class="fas fa-check-circle text-emerald-600 mr-1"></i> Detected Industry Skills (${matchedSkills.length}):</p>
+            <div class="flex flex-wrap gap-1 pt-1">
+              ${matchedSkills.length > 0 
+                ? matchedSkills.map(s => `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md font-medium text-[11px]">${s}</span>`).join('') 
+                : '<span class="text-slate-400">No major-specific keywords detected. Specify tools and hands-on tasks.</span>'}
+            </div>
+          </div>
+
+          <div class="bg-indigo-50/70 p-3 rounded-xl border border-indigo-100 text-xs space-y-1">
+            <p class="font-bold text-indigo-900"><i class="fas fa-lightbulb text-amber-500 mr-1"></i> Career Recommendations:</p>
+            <p class="text-slate-600">• Recommended skills for high employability: <strong>${standard.recommended}</strong></p>
+            <p class="text-slate-600">• Quantify achievements (e.g., "Reduced downtime by 20%").</p>
+          </div>
+        `;
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 10. MOCK INTERVIEW & ADMIN
+    // -------------------------------------------------------------
+    const mockQuestions = {
+      th: [
+        "ช่วยเล่าถึงประสบการณ์ฝึกปฏิบัติงานจริงที่โดดเด่นที่สุดในวิทยาลัยเทคโนโลยีอีสานเหนือให้ฟังหน่อยครับ?",
+        "หากในระหว่างปฏิบัติงานพบปัญหาเฉพาะหน้า คุณมีแนวทางแก้ไขอย่างไร?",
+        "ทำไมสถานประกอบการถึงควรเลือกคุณเข้าทำงานในตำแหน่งนี้?"
+      ],
+      en: [
+        "Can you share your most prominent hands-on project or internship experience at E-Sarn Tech?",
+        "How do you handle unexpected technical problems on the job?",
+        "Why should our company hire you over other candidates?"
+      ]
+    };
+
+    function generateQuestion() {
+      const qs = mockQuestions[currentLang];
+      const q = qs[Math.floor(Math.random() * qs.length)];
+      document.getElementById("interview-question-box").innerText = (currentLang === 'th' ? "คำถามสัมภาษณ์: " : "Question: ") + q;
+    }
+
+    function evaluateInterview() {
+      const ans = document.getElementById("interview-answer-input").value.trim();
+      const fb = document.getElementById("interview-eval-output");
+      if (!ans) return alert(currentLang === 'th' ? "กรุณากรอกคำตอบสำหรับการสัมภาษณ์" : "Please write your interview response");
+
+      fb.classList.remove('hidden');
+      if (currentLang === 'th') {
+        fb.innerHTML = `
+          <div class="font-bold text-emerald-900 mb-1">ผลประเมินคำตอบโดย AI:</div>
+          <p class="text-xs text-emerald-800">✅ <strong>การสื่อสาร:</strong> ตอบได้ชัดเจน มั่นใจ และมีทัศนคติที่ดี</p>
+          <p class="text-xs text-slate-600 mt-1">💡 <strong>คำแนะนำ:</strong> การเล่าตัวอย่างแบบ STAR (Situation, Task, Action, Result) จะช่วยให้คำตอบน่าเชื่อถือยิ่งขึ้น</p>
+        `;
+      } else {
+        fb.innerHTML = `
+          <div class="font-bold text-emerald-900 mb-1">AI Interview Feedback:</div>
+          <p class="text-xs text-emerald-800">✅ <strong>Communication:</strong> Clear, confident, and professional attitude.</p>
+          <p class="text-xs text-slate-600 mt-1">💡 <strong>Tip:</strong> Use the STAR method (Situation, Task, Action, Result) to make your answer even more compelling.</p>
+        `;
+      }
+    }
+
+    function renderKnowledgeList() {
+      const container = document.getElementById("knowledge-list-view");
+      document.getElementById("doc-count").innerText = knowledgeBase.length;
+      container.innerHTML = knowledgeBase.map(item => `
+        <div class="p-3 bg-slate-50 border rounded-2xl flex justify-between items-start">
+          <div>
+            <span class="font-bold text-emerald-900 text-xs">${item.title}</span>
+            <p class="text-xs text-slate-600 mt-1 line-clamp-2">${currentLang === 'th' ? item.content_th : item.content_en}</p>
+          </div>
+          <button onclick="deleteDoc(${item.id})" class="text-slate-400 hover:text-red-600 text-xs ml-3"><i class="fas fa-trash"></i></button>
+        </div>
+      `).join('');
+    }
+
+    function addDocument() {
+      const title = document.getElementById("admin-title").value.trim();
+      const content = document.getElementById("admin-content").value.trim();
+      if (!title || !content) return alert(currentLang === 'th' ? "กรุณาระบุทั้งหัวข้อและเนื้อหา" : "Please provide title and content");
+
+      knowledgeBase.push({
+        id: Date.now(),
+        title,
+        tags: title.split(/\s+/),
+        content_th: content,
+        content_en: content
+      });
+      document.getElementById("admin-title").value = "";
+      document.getElementById("admin-content").value = "";
+      renderKnowledgeList();
+      alert(currentLang === 'th' ? "เพิ่มข้อมูลเรียบร้อยแล้ว!" : "Document added successfully!");
+    }
+
+    function deleteDoc(id) {
+      knowledgeBase = knowledgeBase.filter(d => d.id !== id);
+      renderKnowledgeList();
+    }
+
+    function switchTab(tabId) {
+      ['info', 'curriculum', 'career', 'admin'].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.add('hidden');
+        document.getElementById(`tab-btn-${t}`).className = "py-3 px-4 font-medium border-b-2 border-transparent text-slate-600 hover:text-emerald-700 flex items-center space-x-2 text-sm whitespace-nowrap";
+      });
+      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+      document.getElementById(`tab-btn-${tabId}`).className = "py-3 px-4 font-medium border-b-2 border-emerald-600 text-emerald-700 flex items-center space-x-2 text-sm whitespace-nowrap";
+    }
+
+    // Initialize Page
+    updateUILanguage();
+  </script>
+</body>
+</html>

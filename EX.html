@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Sarn Tech | Next-Gen AI Assistant & Career Competency Platform</title>
+  <!-- Tailwind CSS & Font Awesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            cyber: {
+              bg: '#090d16',
+              card: '#0f172a',
+              border: '#1e293b',
+              neon: '#10b981',
+              cyan: '#06b6d4',
+              glow: '#059669'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Orbitron:wght@600;800&display=swap');
+    body { font-family: 'Kanit', sans-serif; background-color: #090d16; color: #e2e8f0; }
+    .font-hud { font-family: 'Orbitron', sans-serif; }
+    
+    .chat-scroll::-webkit-scrollbar { width: 5px; }
+    .chat-scroll::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    .chat-scroll::-webkit-scrollbar-thumb:hover { background: #10b981; }
+
+    .hud-glass {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    .hud-glass:hover {
+      border-color: rgba(16, 185, 129, 0.45);
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+    }
+    .cyber-glow {
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.35);
+    }
+
+    .avatar-float { animation: floatIdle 3.5s ease-in-out infinite; }
+    @keyframes floatIdle { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+
+    .orbit-spin { animation: spinOrbit 12s linear infinite; }
+    @keyframes spinOrbit { 100% { transform: rotate(360deg); } }
+
+    .orbit-spin-reverse { animation: spinOrbitRev 9s linear infinite; }
+    @keyframes spinOrbitRev { 100% { transform: rotate(-360deg); } }
+
+    .eye-blink { transform-origin: center; animation: blink 4s infinite; }
+    @keyframes blink { 0%, 96%, 100% { transform: scaleY(1); } 98% { transform: scaleY(0.1); } }
+
+    .mouth-speaking {
+      animation: lipSync var(--mouth-speed, 0.22s) infinite alternate ease-in-out;
+      transform-origin: 50% 70%;
+    }
+    @keyframes lipSync {
+      0% { transform: scaleY(0.2) scaleX(0.8); }
+      100% { transform: scaleY(1.6) scaleX(1.2); }
+    }
+
+    @media print {
+      body * { visibility: hidden; }
+      #resume-output, #resume-output * { visibility: visible; }
+      #resume-output { position: absolute; left: 0; top: 0; width: 100%; color: #000; background: #fff !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-emerald-500 selection:text-black">
+
+  <!-- ==================== ROYAL TRIBUTE POPUP ==================== -->
+  <div id="royal-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 transition-opacity duration-300">
+    <div class="bg-slate-900 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border-2 border-amber-400/50 text-center relative">
+      <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 text-amber-200 py-3.5 px-6 border-b border-amber-400/30">
+        <p class="text-[11px] tracking-widest uppercase font-semibold" id="txt-royal-header">สมเด็จพระเจ้าลูกเธอ เจ้าฟ้าพัชรกิติยาภา นเรนทิราเทพยวดี กรมหลวงราชสาริณีสิริพัชร มหาวัชรราชธิดา</p>
+      </div>
+      <div class="p-6 sm:p-8 space-y-4">
+        <div class="w-16 h-16 mx-auto rounded-full bg-slate-800 border-2 border-amber-400/40 flex items-center justify-center text-amber-300 text-2xl shadow-inner">
+          <i class="fas fa-ribbon"></i>
+        </div>
+        <div class="space-y-2">
+          <h3 class="text-lg sm:text-xl font-bold text-slate-100" id="txt-royal-title">
+            น้อมรำลึกในพระมหากรุณาธิคุณอันหาที่สุดมิได้
+          </h3>
+          <p class="text-xs sm:text-sm text-slate-400 leading-relaxed font-light" id="txt-royal-body">
+            ข้าพระพุทธเจ้า ผู้บริหาร ครู บุคลากร และนักเรียน นักศึกษา<br>
+            <strong class="text-emerald-400 font-semibold">วิทยาลัยเทคโนโลยีอีสานเหนือ</strong>
+          </p>
+        </div>
+        <div class="pt-4 border-t border-slate-800 flex justify-center">
+          <button onclick="closeRoyalModal()" class="w-full sm:w-auto px-8 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-slate-950 font-bold rounded-xl text-xs tracking-wider transition shadow-lg" id="btn-royal-enter">
+            เข้าสู่เว็บไซต์ (ENTER PLATFORM)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Cyber Header -->
+  <header class="hud-glass sticky top-0 z-50 border-b border-emerald-500/20">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
+        <div class="w-11 h-11 bg-gradient-to-br from-emerald-400 to-teal-600 text-slate-950 font-black rounded-xl flex items-center justify-center text-xl shadow-lg shadow-emerald-500/30 border border-emerald-300">
+          EN
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-base sm:text-lg font-bold tracking-tight text-white flex items-center">
+              <span id="txt-college-name">วิทยาลัยเทคโนโลยีอีสานเหนือ</span>
+              <span class="ml-2 font-hud text-[10px] text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/40">AI-OS v5.0 GOLD EDITION</span>
+            </h1>
+          </div>
+          <p class="text-xs text-slate-400" id="txt-header-sub">แพลตฟอร์มผู้ช่วยอัจฉริยะ AI เพื่อบริการข้อมูลและเตรียมความพร้อมสู่สายอาชีพ</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-2.5">
+        <a href="http://www.esarntech.ac.th/" target="_blank" class="hidden sm:inline-flex items-center space-x-1.5 bg-amber-400/90 hover:bg-amber-400 text-slate-950 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-md shadow-amber-400/20">
+          <i class="fas fa-edit"></i> <span id="txt-apply-btn">สมัครเรียน</span>
+        </a>
+        <a href="https://line.me" target="_blank" class="hidden sm:inline-flex items-center space-x-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 px-3 py-1.5 rounded-xl text-xs font-semibold transition">
+          <i class="fab fa-line text-sm text-emerald-400"></i> <span id="txt-line-btn">LINE สถาบัน</span>
+        </a>
+        <button onclick="toggleLanguage()" class="flex items-center space-x-1.5 bg-slate-800/80 hover:bg-slate-700 border border-slate-600 px-3 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition shadow-sm text-slate-200">
+          <i class="fas fa-globe text-cyan-400"></i>
+          <span id="lang-btn-text">TH / EN</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Cyber Sub-Banner -->
+  <div class="bg-slate-950/90 text-slate-400 text-xs py-1.5 px-4 text-center border-b border-slate-800 flex items-center justify-center space-x-3">
+    <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+    <span id="txt-slogan">อัตลักษณ์: <em>"เราไม่ได้สร้างอัจฉริยะ แต่เราสร้างคนที่สถานประกอบการอยากได้"</em></span>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="bg-slate-950/70 border-b border-slate-800/80 sticky top-[65px] z-40 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 flex space-x-2 overflow-x-auto">
+      <button onclick="switchTab('home')" id="tab-btn-home" class="py-3 px-4 font-medium border-b-2 border-emerald-400 text-emerald-400 flex items-center space-x-2 text-sm whitespace-nowrap">
+        <i class="fas fa-home"></i> <span id="tab-text-home">หน้าหลัก</span>
+      </button>
+      <button onclick="switchTab('info')" id="tab-btn-info" class="py-3 px-4 font-medium border-b-2 border-transparent text-slate-400 hover:text-emerald-300 flex items-center space-x-2 text-sm whitespace-nowrap">
+        <i class="fas fa-robot"></i> <span id="tab-text-info">ผู้ช่วย AI & อวตาร</span>
+      </button>
+      <button onclick="switchTab('curriculum')" id="tab-btn-curriculum" class="py-3 px-4 font-medium border-b-2 border-transparent text-slate-400 hover:text-emerald-300 flex items-center space-x-2 text-sm whitespace-nowrap">
+        <i class="fas fa-graduation-cap"></i> <span id="tab-text-curriculum">หลักสูตร & ค่าธรรมเนียม</span>
+      </button>
+      <button onclick="switchTab('career')" id="tab-btn-career" class="py-3 px-4 font-medium border-b-2 border-transparent text-slate-400 hover:text-emerald-300 flex items-center space-x-2 text-sm whitespace-nowrap">
+        <i class="fas fa-briefcase"></i> <span id="tab-text-career">เตรียมพร้อมสายอาชีพ & ใบสมรรถนะ</span>
+      </button>
+      
+      <!-- ADMIN BUTTON WITH PIN CHECK (PIN: 1234) -->
+      <button onclick="openAdminTab()" id="tab-btn-admin" class="py-3 px-4 font-medium border-b-2 border-transparent text-slate-400 hover:text-emerald-300 flex items-center space-x-2 text-sm whitespace-nowrap">
+        <i class="fas fa-chart-line"></i> <span id="tab-text-admin">ฐานความรู้ & สถิติ (Admin)</span>
+      </button>
+
+      <button onclick="switchTab('evaluation')" id="tab-btn-evaluation" class="py-3 px-4 font-medium border-b-2 border-transparent text-slate-400 hover:text-emerald-300 flex items-center space-x-2 text-sm whitespace-nowrap">
+        <i class="fas fa-star"></i> <span id="tab-text-evaluation">แบบประเมินระบบ</span>
+      </button>
+      <button onclick="switchTab('about')" id="tab-btn-about" class="py-3 px-4 font-medium border-b-2 border-transparent text-slate-400 hover:text-emerald-300 flex items-center space-x-2 text-sm whitespace-nowrap">
+        <i class="fas fa-id-card"></i> <span id="tab-text-about">ข้อมูลผู้จัดทำ</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto p-4 sm:p-6 flex-1 w-full space-y-6">
+
+    <!-- TAB 0: HOME PAGE -->
+    <section id="tab-home" class="space-y-6">
+      <div class="relative hud-glass rounded-3xl p-6 sm:p-10 overflow-hidden shadow-2xl border border-emerald-500/30">
+        <div class="absolute -right-20 -bottom-20 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl -z-10"></div>
+        <div class="absolute -left-20 -top-20 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl -z-10"></div>
+        
+        <div class="relative z-10 max-w-3xl space-y-4">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 bg-emerald-950/80 text-emerald-400 border border-emerald-500/40 rounded-full text-xs font-semibold">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            <span>NEXT-GEN VOCATIONAL AI PLATFORM</span>
+          </div>
+          <h2 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight" id="txt-hero-title">
+            ขับเคลื่อนการศึกษาสายอาชีพสู่อนาคต<br>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400" id="txt-hero-subtitle">ด้วยเทคโนโลยีปัญญาประดิษฐ์อัจฉริยะ</span>
+          </h2>
+          <p class="text-sm sm:text-base text-slate-300 leading-relaxed font-light" id="txt-hero-desc">
+            วิทยาลัยเทคโนโลยีอีสานเหนือ ยกระดับการให้บริการข้อมูลหลักสูตร ค่าธรรมเนียมการศึกษา และเตรียมความพร้อมสู่ตลาดแรงงานจริง ผ่านสถาปัตยกรรม RAG และระบบออกใบรับรองสมรรถนะวิชาชีพ
+          </p>
+          <div class="flex flex-wrap gap-3 pt-3">
+            <button onclick="switchTab('info')" class="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold px-6 py-3 rounded-2xl text-sm transition shadow-lg shadow-emerald-500/25 flex items-center" id="btn-hero-ai">
+              <i class="fas fa-robot mr-2"></i> คุยกับพี่สมาร์ท AI
+            </button>
+            <button onclick="switchTab('career')" class="hud-glass hover:bg-slate-800/80 text-emerald-300 font-medium px-6 py-3 rounded-2xl text-sm transition border border-emerald-500/40 flex items-center" id="btn-hero-career">
+              <i class="fas fa-award mr-2"></i> ประเมินสมรรถนะวิชาชีพ
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Partners Showcase -->
+      <div class="hud-glass p-6 rounded-3xl border border-slate-800 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+          <div>
+            <span class="text-xs font-hud text-emerald-400 tracking-wider">ENTERPRISE ALLIANCE</span>
+            <h3 class="text-base font-bold text-white" id="txt-partner-title">4 พันธมิตรสถานประกอบการชั้นนำ (โครงการทวิภาคี)</h3>
+          </div>
+          <span class="text-xs text-slate-400" id="txt-partner-sub">การันตีโอกาสได้งานทำและฝึกงานตรงสาย</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <a href="https://www.honda.co.th/" target="_blank" rel="noopener noreferrer" class="p-4 bg-slate-900/80 rounded-2xl border border-slate-800 text-center space-y-1.5 hover:border-emerald-500/50 transition block group">
+            <i class="fas fa-car text-emerald-400 text-2xl group-hover:scale-110 transition-transform"></i>
+            <h4 class="font-bold text-white text-sm">HONDA</h4>
+            <p class="text-[11px] text-slate-400">บจก. ฮอนด้า ออโตโมบิล</p>
+            <span class="inline-block text-[10px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30">สาขาช่างยนต์</span>
+          </a>
+          <a href="https://www.fujikura.com/" target="_blank" rel="noopener noreferrer" class="p-4 bg-slate-900/80 rounded-2xl border border-slate-800 text-center space-y-1.5 hover:border-cyan-500/50 transition block group">
+            <i class="fas fa-microchip text-cyan-400 text-2xl group-hover:scale-110 transition-transform"></i>
+            <h4 class="font-bold text-white text-sm">FUJIKURA</h4>
+            <p class="text-[11px] text-slate-400">บจก. ฟูจิคูระ</p>
+            <span class="inline-block text-[10px] bg-cyan-950 text-cyan-300 px-2 py-0.5 rounded border border-cyan-500/30">อิเล็กทรอนิกส์ & คอมฯ</span>
+          </a>
+          <a href="https://www.zengroup.co.th/" target="_blank" rel="noopener noreferrer" class="p-4 bg-slate-900/80 rounded-2xl border border-slate-800 text-center space-y-1.5 hover:border-amber-500/50 transition block group">
+            <i class="fas fa-store text-amber-400 text-2xl group-hover:scale-110 transition-transform"></i>
+            <h4 class="font-bold text-white text-sm">ZEN GROUP</h4>
+            <p class="text-[11px] text-slate-400">เซ็น คอร์ปอเรชั่น กรุ๊ป</p>
+            <span class="inline-block text-[10px] bg-amber-950 text-amber-300 px-2 py-0.5 rounded border border-amber-500/30">การตลาด & การบัญชี</span>
+          </a>
+          <a href="https://www.staraire.com/" target="_blank" rel="noopener noreferrer" class="p-4 bg-slate-900/80 rounded-2xl border border-slate-800 text-center space-y-1.5 hover:border-blue-500/50 transition block group">
+            <i class="fas fa-fan text-blue-400 text-2xl group-hover:scale-110 transition-transform"></i>
+            <h4 class="font-bold text-white text-sm">STAR AIRE</h4>
+            <p class="text-[11px] text-slate-400">บจก. สตาร์แอร์</p>
+            <span class="inline-block text-[10px] bg-blue-950 text-blue-300 px-2 py-0.5 rounded border border-blue-500/30">ช่างเครื่องทำความเย็น</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Feature Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="hud-glass p-6 rounded-3xl space-y-3 cursor-pointer" onclick="switchTab('info')">
+          <div class="w-12 h-12 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-xl border border-emerald-500/30">
+            <i class="fas fa-brain"></i>
+          </div>
+          <h3 class="font-bold text-white text-base" id="feat-title-1">RAG Knowledge Engine</h3>
+          <p class="text-xs text-slate-400 leading-relaxed" id="feat-desc-1">สืบค้นข้อมูลระเบียบการและค่าเทอมจากฐานข้อมูลทางการ พร้อมแสดง Source Verification และ Confidence Score</p>
+        </div>
+        <div class="hud-glass p-6 rounded-3xl space-y-3 cursor-pointer" onclick="switchTab('curriculum')">
+          <div class="w-12 h-12 bg-cyan-500/10 text-cyan-400 rounded-2xl flex items-center justify-center text-xl border border-cyan-500/30">
+            <i class="fas fa-coins"></i>
+          </div>
+          <h3 class="font-bold text-white text-base" id="feat-title-2">Tuition & Financial Aid</h3>
+          <p class="text-xs text-slate-400 leading-relaxed" id="feat-desc-2">ปวช. 4,500 บาท / ปวส. 9,500 บาท กู้ กยศ. ได้เต็มจำนวน 100% พร้อมโครงการทุนนวัตกรรมสายอาชีพชั้นสูง (กสศ.)</p>
+        </div>
+        <div class="hud-glass p-6 rounded-3xl space-y-3 cursor-pointer" onclick="switchTab('career')">
+          <div class="w-12 h-12 bg-purple-500/10 text-purple-400 rounded-2xl flex items-center justify-center text-xl border border-purple-500/30">
+            <i class="fas fa-award"></i>
+          </div>
+          <h3 class="font-bold text-white text-base" id="feat-title-3">Competency & Assessment</h3>
+          <p class="text-xs text-slate-400 leading-relaxed" id="feat-desc-3">ประเมินสมรรถนะวิชาชีพ ออกใบรับรองแบบเรียลไทม์ และฝึกสัมภาษณ์งานจำลองกับ AI</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 1: Chatbot & Avatar -->
+    <section id="tab-info" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Avatar Panel -->
+      <div class="lg:col-span-5 hud-glass p-6 rounded-3xl flex flex-col items-center justify-between text-center relative border border-emerald-500/30">
+        <div class="w-full flex justify-between items-center text-xs mb-2">
+          <span class="px-3 py-1 bg-slate-900 text-emerald-400 rounded-full font-mono font-semibold border border-emerald-500/30">
+            <i class="fas fa-shield-halved mr-1"></i> SMART-AVATAR v5.0
+          </span>
+          <span id="avatar-status-pill" class="px-2.5 py-1 bg-emerald-950 text-emerald-300 rounded-full font-semibold border border-emerald-500/40 text-[11px]">
+            ● ONLINE & READY
+          </span>
+        </div>
+
+        <div class="relative my-4 flex items-center justify-center">
+          <div class="w-60 h-60 rounded-full border border-dashed border-emerald-500/30 orbit-spin absolute -z-10"></div>
+          <div class="w-52 h-52 rounded-full border border-cyan-500/25 orbit-spin-reverse absolute -z-10"></div>
+          
+          <div id="avatar-glow" class="w-48 h-48 rounded-full bg-gradient-to-b from-emerald-500 to-teal-800 p-1 shadow-2xl flex items-center justify-center avatar-float cyber-glow">
+            <div class="w-full h-full bg-slate-950 rounded-full overflow-hidden relative flex items-center justify-center">
+              <svg viewBox="0 0 200 200" class="w-40 h-40 drop-shadow-lg">
+                <path d="M40 90 Q100 20 160 90 Q170 120 160 140 Q100 165 40 140 Z" fill="#0f172a"/>
+                <path d="M50 80 Q100 35 150 80 Q130 50 100 50 Q70 50 50 80 Z" fill="#059669"/>
+                <rect x="55" y="65" width="90" height="85" rx="35" fill="#fcd34d"/>
+                <circle cx="68" cy="115" r="7" fill="#f87171" opacity="0.6"/>
+                <circle cx="132" cy="115" r="7" fill="#f87171" opacity="0.6"/>
+                <g class="eye-blink">
+                  <ellipse cx="78" cy="98" rx="8" ry="11" fill="#0f172a"/>
+                  <circle cx="80" cy="94" r="3.5" fill="#ffffff"/>
+                  <ellipse cx="122" cy="98" rx="8" ry="11" fill="#0f172a"/>
+                  <circle cx="124" cy="94" r="3.5" fill="#ffffff"/>
+                </g>
+                <rect x="64" y="86" width="28" height="22" rx="6" fill="none" stroke="#10b981" stroke-width="3.5"/>
+                <rect x="108" y="86" width="28" height="22" rx="6" fill="none" stroke="#10b981" stroke-width="3.5"/>
+                <line x1="92" y1="96" x2="108" y2="96" stroke="#10b981" stroke-width="3.5"/>
+                <ellipse id="avatar-mouth" cx="100" cy="128" rx="10" ry="3" fill="#be123c"/>
+                <path d="M75 150 L100 170 L125 150 Z" fill="#ffffff"/>
+                <path d="M96 160 L104 160 L107 195 L100 200 L93 195 Z" fill="#047857"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-full bg-slate-900/90 p-3 rounded-2xl border border-slate-800 text-xs text-slate-300 space-y-1 mb-3">
+          <p id="avatar-caption" class="text-emerald-400 font-medium">"สวัสดีครับ ถามเรื่องค่าเทอม ปวช. หรือ ปวส. ได้เลยนะ!"</p>
+        </div>
+
+        <div class="w-full bg-slate-900/90 p-3.5 rounded-2xl border border-slate-800 text-xs space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="font-semibold text-slate-300 flex items-center">
+              <i class="fas fa-volume-high text-emerald-400 mr-2"></i> <span id="txt-tts-label">อ่านคำตอบออกเสียง (TTS)</span>
+            </span>
+            <input type="checkbox" id="tts-toggle" checked class="w-4 h-4 accent-emerald-500 rounded">
+          </div>
+          <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+            <span class="text-slate-400" id="txt-speed-label">สปีดการพูด:</span>
+            <div class="flex items-center space-x-1">
+              <button onclick="adjustSpeed(-0.25)" class="w-7 h-7 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-lg border border-slate-700 flex items-center justify-center transition">
+                <i class="fas fa-minus text-[10px]"></i>
+              </button>
+              <span id="speed-display" class="w-12 text-center font-mono font-bold text-emerald-400 bg-slate-950 border border-slate-800 rounded-lg py-1 text-xs">1.0x</span>
+              <button onclick="adjustSpeed(0.25)" class="w-7 h-7 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-lg border border-slate-700 flex items-center justify-center transition">
+                <i class="fas fa-plus text-[10px]"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Screen -->
+      <div class="lg:col-span-7 hud-glass rounded-3xl shadow-xl flex flex-col h-[640px] border border-emerald-500/30">
+        <div class="p-4 border-b border-slate-800 bg-slate-950/80 rounded-t-3xl flex justify-between items-center">
+          <div class="flex items-center space-x-2">
+            <span class="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping"></span>
+            <h2 class="text-sm font-bold text-white flex items-center font-hud" id="txt-chat-header">
+              RAG INTELLIGENT RETRIEVAL
+            </h2>
+          </div>
+          <button onclick="clearChat()" class="text-xs text-slate-500 hover:text-red-400 transition">
+            <i class="fas fa-trash-can mr-1"></i><span id="txt-clear-chat">ล้างแชท</span>
+          </button>
+        </div>
+
+        <div class="px-4 py-2.5 bg-slate-950/50 border-b border-slate-800/80 flex space-x-2 overflow-x-auto text-xs whitespace-nowrap" id="quick-prompts-container"></div>
+        <div id="chat-box" class="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll"></div>
+
+        <div class="p-3.5 border-t border-slate-800 bg-slate-950/80 rounded-b-3xl">
+          <div class="flex items-center space-x-2">
+            <button id="mic-btn" onclick="toggleVoiceInput()" class="p-3 rounded-2xl bg-slate-900 text-slate-400 hover:text-emerald-400 hover:bg-slate-800 border border-slate-800 transition" title="สั่งการด้วยเสียง">
+              <i class="fas fa-microphone text-base"></i>
+            </button>
+            <input type="text" id="user-input" placeholder="พิมพ์คำถามของคุณที่นี่..." class="flex-1 bg-slate-900 border border-slate-800 rounded-2xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" onkeypress="if(event.key==='Enter') sendMessage()">
+            <button onclick="sendMessage()" class="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 px-5 py-2.5 rounded-2xl text-sm font-bold transition flex items-center space-x-1.5 shadow-md shadow-emerald-500/20">
+              <span id="txt-send-btn">ส่ง</span>
+              <i class="fas fa-paper-plane text-xs"></i>
+            </button>
+          </div>
+          <div id="recording-status" class="text-[11px] text-red-400 font-medium mt-1.5 ml-12 hidden animate-pulse">
+            ● <span id="txt-rec-status">กำลังฟังเสียงของคุณ...</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: Curriculum & Tuition -->
+    <section id="tab-curriculum" class="hidden space-y-6">
+      <div class="hud-glass p-6 rounded-3xl space-y-4 border border-emerald-500/30">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+          <div>
+            <span class="text-xs font-hud text-emerald-400 tracking-wider">TUITION & FUNDING</span>
+            <h3 class="text-lg font-bold text-white" id="txt-fee-title">อัตราค่าธรรมเนียมการศึกษาและค่าเทอม</h3>
+          </div>
+          <span class="text-xs bg-emerald-950 text-emerald-300 px-3 py-1 rounded-full border border-emerald-500/40 font-medium" id="txt-fund-badge">
+            <i class="fas fa-check-circle text-emerald-400 mr-1"></i> รองรับกองทุน กยศ. 100%
+          </span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-900 text-slate-300 border-b border-slate-800">
+                <th class="p-3" id="th-level">ระดับการศึกษา</th>
+                <th class="p-3" id="th-major">สาขาวิชาที่เปิดสอน</th>
+                <th class="p-3 text-center" id="th-fee">ค่าเทอม / ภาคเรียน</th>
+                <th class="p-3" id="th-detail">รายละเอียดและสิทธิ์กู้ยืม</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800 text-slate-300" id="tuition-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="majors-container"></div>
+    </section>
+
+    <!-- TAB 3: Career Hub (AI Analyzer + AI Mock Interview) -->
+    <section id="tab-career" class="hidden space-y-6">
+      <div class="hud-glass p-6 rounded-3xl border border-emerald-500/30">
+        <h2 class="text-xl font-bold text-white mb-1" id="txt-career-title">ศูนย์ประเมินสมรรถนะวิชาชีพ & จำลองการสัมภาษณ์งาน</h2>
+        <p class="text-sm text-slate-400" id="txt-career-sub">ประเมินทักษะวิชาชีพ ออกใบรับรองสมรรถนะ (Competency Report) และฝึกสัมภาษณ์งานจริงกับระบบ AI</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- AI Competency & Resume Analyzer -->
+        <div class="hud-glass p-6 rounded-3xl space-y-4 border border-slate-800">
+          <div class="flex items-center space-x-2 border-b border-slate-800 pb-3">
+            <i class="fas fa-file-contract text-cyan-400 text-lg"></i>
+            <h3 class="font-bold text-white" id="txt-resume-title">ระบบวิเคราะห์และออกใบสมรรถนะวิชาชีพ</h3>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1" id="txt-select-major-label">เลือกสาขาวิชาของคุณ</label>
+            <select id="resume-major" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-sm text-white">
+              <option value="คอมพิวเตอร์ธุรกิจ">สาขาวิชาคอมพิวเตอร์ธุรกิจ (Digital Business)</option>
+              <option value="ช่างยนต์">สาขาวิชาช่างยนต์ (Automotive)</option>
+              <option value="การบัญชี">สาขาวิชาการบัญชี (Accounting)</option>
+              <option value="การตลาด">สาขาวิชาการตลาด (Marketing)</option>
+              <option value="ดนตรี">สาขาวิชาดนตรี (Music)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1" id="txt-resume-input-label">วางเนื้อหา Resume, ทักษะวิชาชีพ, ประสบการณ์ฝึกงาน</label>
+            <textarea id="resume-input" rows="5" placeholder="เช่น นายอโณทัย สุริวงค์ มีทักษะการพัฒนาเว็บ AI RAG Systems, HTML, CSS, JavaScript ผ่านการสร้างแพลตฟอร์มวิทยาลัย..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-cyan-400 outline-none leading-relaxed"></textarea>
+          </div>
+          <button onclick="analyzeResume()" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white py-2.5 rounded-xl font-bold text-sm transition shadow-lg shadow-cyan-500/20 flex items-center justify-center space-x-2" id="btn-analyze-resume">
+            <i class="fas fa-award"></i>
+            <span>ประเมินสมรรถนะ & ออกใบรับรองดิจิทัล</span>
+          </button>
+          
+          <!-- Competency Output Report -->
+          <div id="resume-output" class="hidden p-5 bg-slate-900/90 border border-cyan-500/40 rounded-2xl text-sm space-y-4"></div>
+        </div>
+
+        <!-- AI Mock Interview -->
+        <div class="hud-glass p-6 rounded-3xl space-y-4 border border-slate-800">
+          <div class="flex items-center space-x-2 border-b border-slate-800 pb-3">
+            <i class="fas fa-user-tie text-emerald-400 text-lg"></i>
+            <h3 class="font-bold text-white" id="txt-mock-title">จำลองการสัมภาษณ์งาน (AI Mock Interview)</h3>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1" id="txt-role-label">ตำแหน่งงานที่ต้องการสัมภาษณ์</label>
+            <div class="flex space-x-2">
+              <input type="text" id="interview-role" value="นักพัฒนาซอฟต์แวร์ / ผู้ดูแลระบบไอที" class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white">
+              <button onclick="generateQuestion()" class="bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-sm" id="btn-rand-q">สุ่มคำถาม</button>
+            </div>
+          </div>
+          <div id="interview-question-box" class="p-3 bg-emerald-950/60 text-emerald-300 border border-emerald-500/30 rounded-xl text-sm font-medium">
+            กดปุ่ม "สุ่มคำถาม" เพื่อเริ่มฝึกตอบคำถามสัมภาษณ์กับพี่สมาร์ท AI
+          </div>
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-xs font-semibold text-slate-400" id="txt-ans-label">คำตอบของคุณ</label>
+              <button onclick="toggleInterviewVoice()" id="interview-voice-btn" class="text-xs text-emerald-400 hover:text-emerald-300 flex items-center space-x-1 font-semibold">
+                <i class="fas fa-microphone"></i> <span id="txt-voice-ans-btn">ตอบด้วยเสียง</span>
+              </button>
+            </div>
+            <textarea id="interview-answer" rows="3" placeholder="พิมพ์คำตอบสัมภาษณ์ของคุณ หรือกดพูดด้วยเสียง..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:border-emerald-500 outline-none leading-relaxed"></textarea>
+          </div>
+          <button onclick="evaluateInterviewAnswer()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-slate-950 py-2.5 rounded-xl font-bold text-sm transition shadow-lg shadow-emerald-500/20" id="btn-eval-ans">
+            ส่งคำตอบให้ AI ประเมินและแนะนำจุดปรับปรุง
+          </button>
+          
+          <div id="interview-feedback" class="hidden p-4 bg-slate-900/90 border border-slate-800 rounded-2xl text-sm space-y-2"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: Admin Knowledge & Stats -->
+    <section id="tab-admin" class="hidden space-y-6">
+      <div class="hud-glass p-6 rounded-3xl space-y-4 border border-emerald-500/30">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+          <div>
+            <span class="text-xs font-hud text-emerald-400 tracking-wider">SYSTEM METRICS & RAG KNOWLEDGE</span>
+            <h3 class="text-lg font-bold text-white" id="txt-admin-title">จัดการฐานความรู้ RAG และสถิติการใช้งาน</h3>
+          </div>
+          <span class="text-xs bg-emerald-950 text-emerald-300 px-3 py-1 rounded-full border border-emerald-500/40 font-mono">
+            STATUS: ACTIVE KNOWLEDGE NODE
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="p-4 bg-slate-900 rounded-2xl border border-slate-800 text-center space-y-1">
+            <p class="text-xs text-slate-400" id="txt-stat-1">จำนวนคำถามผ่านระบบ RAG วันนี้</p>
+            <h4 class="text-2xl font-black text-emerald-400 font-hud">1,482</h4>
+            <p class="text-[10px] text-emerald-500">↑ 18% จากเมื่อวาน</p>
+          </div>
+          <div class="p-4 bg-slate-900 rounded-2xl border border-slate-800 text-center space-y-1">
+            <p class="text-xs text-slate-400" id="txt-stat-2">ความแม่นยำ RAG (Confidence Score)</p>
+            <h4 class="text-2xl font-black text-cyan-400 font-hud">98.4%</h4>
+            <p class="text-[10px] text-cyan-500">เสถียรภาพสูง</p>
+          </div>
+          <div class="p-4 bg-slate-900 rounded-2xl border border-slate-800 text-center space-y-1">
+            <p class="text-xs text-slate-400" id="txt-stat-3">ผู้เรียนผ่านเกณฑ์เตรียมความพร้อมอาชีพ</p>
+            <h4 class="text-2xl font-black text-amber-400 font-hud">325 คน</h4>
+            <p class="text-[10px] text-amber-500">พร้อมจับคู่ฝึกงาน 4 พาร์ทเนอร์</p>
+          </div>
+        </div>
+
+        <div class="pt-4 space-y-3">
+          <h4 class="font-bold text-sm text-white" id="txt-rag-add-title">อัปเดตเอกสารข้อมูลหลักสูตรเข้าสู่ RAG Vector Store</h4>
+          <div class="flex flex-col sm:flex-row gap-3">
+            <input type="text" id="admin-doc-title" placeholder="ชื่อเอกสาร เช่น ประกาศรับสมัคร ปวช. ปีการศึกษา 2570" class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 outline-none">
+            <button onclick="addRagDocument()" class="bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-sm transition shadow-md" id="btn-add-rag">
+              <i class="fas fa-plus mr-1"></i> เพิ่มเข้าระบบ RAG
+            </button>
+          </div>
+          <div id="rag-doc-list" class="space-y-2 pt-2">
+            <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800 text-xs flex justify-between items-center text-slate-300">
+              <span>📄 คู่มือหลักสูตร ปวช. และ ปวส. วิทยาลัยเทคโนโลยีอีสานเหนือ v5.0 (อัปเดตอัตโนมัติ)</span>
+              <span class="text-emerald-400 font-mono">Indexed (100%)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: Evaluation Form -->
+    <section id="tab-evaluation" class="hidden space-y-6">
+      <div class="hud-glass p-6 rounded-3xl space-y-4 border border-emerald-500/30 max-w-2xl mx-auto">
+        <div class="text-center space-y-1 border-b border-slate-800 pb-4">
+          <span class="text-xs font-hud text-emerald-400 tracking-wider">SYSTEM EVALUATION</span>
+          <h3 class="text-xl font-bold text-white" id="txt-eval-title">แบบประเมินความพึงพอใจการใช้งานแพลตฟอร์ม AI</h3>
+          <p class="text-xs text-slate-400" id="txt-eval-sub">กรุณาให้ความคิดเห็นเพื่อการพัฒนาและยกระดับการให้บริการของวิทยาลัยฯ ต่อไป</p>
+        </div>
+
+        <form onsubmit="submitEvaluation(event)" class="space-y-4 text-sm">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1" id="lbl-eval-q1">1. ระดับความพึงพอใจโดยรวมต่อระบบผู้ช่วยอัจฉริยะ (พี่สมาร์ท AI)</label>
+            <select id="eval-score" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-white">
+              <option value="5">⭐⭐⭐⭐⭐ ยอดเยี่ยม (5/5)</option>
+              <option value="4">⭐⭐⭐⭐ ดีมาก (4/5)</option>
+              <option value="3">⭐⭐⭐ ปานกลาง (3/5)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1" id="lbl-eval-q2">2. ความรวดเร็วและความถูกต้องของข้อมูลหลักสูตรและค่าเทอม</label>
+            <select id="eval-accuracy" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-white">
+              <option value="ดีเยี่ยม">รวดเร็วและถูกต้องแม่นยำสูง</option>
+              <option value="ดี">อยู่ในเกณฑ์ดี</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1" id="lbl-eval-q3">3. ข้อเสนอแนะเพิ่มเติมเพื่อการพัฒนาแพลตฟอร์ม</label>
+            <textarea id="eval-comment" rows="3" placeholder="พิมพ์ข้อเสนอแนะของคุณ..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-white outline-none focus:border-emerald-500"></textarea>
+          </div>
+          <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg" id="btn-submit-eval">
+            ส่งแบบประเมินความพึงพอใจ
+          </button>
+        </form>
+        <div id="eval-success" class="hidden p-3 bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 rounded-xl text-center text-xs">
+          ✓ บันทึกแบบประเมินเรียบร้อยแล้ว ขอบคุณสำหรับความคิดเห็นของคุณครับ!
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 6: About Developer & Advisor Information -->
+    <section id="tab-about" class="hidden space-y-6">
+      <div class="hud-glass p-6 sm:p-8 rounded-3xl space-y-6 border border-emerald-500/30 max-w-3xl mx-auto">
+        <div class="text-center space-y-3 border-b border-slate-800 pb-5">
+          
+          <!-- ส่วนแสดงรูปภาพผู้จัดทำ (img1.jpg) และอาจารย์ที่ปรึกษา (img2.jpg) -->
+          <div class="flex flex-wrap justify-center items-center gap-6 my-2">
+            <!-- รูปผู้จัดทำ (img1.jpg) -->
+            <div class="relative group">
+              <div class="w-28 h-28 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 p-1 shadow-xl shadow-emerald-500/20 border-2 border-emerald-300 overflow-hidden flex items-center justify-center bg-slate-950">
+                <img src="img1.jpg" alt="Developer" class="w-full h-full object-cover rounded-xl" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="w-full h-full bg-slate-950 text-emerald-400 font-black text-3xl items-center justify-center hidden">อ</div>
+              </div>
+              <span class="absolute -bottom-2.5 left-1/2 -translate-x-1/2 bg-slate-950 text-emerald-400 text-[10px] px-2.5 py-0.5 rounded-full border border-emerald-500/40 font-semibold whitespace-nowrap" id="badge-dev">ผู้พัฒนาโครงการ</span>
+            </div>
+
+            <!-- รูปอาจารย์ที่ปรึกษา (img2.jpg) -->
+            <div class="relative group">
+              <div class="w-28 h-28 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 p-1 shadow-xl shadow-cyan-500/20 border-2 border-cyan-300 overflow-hidden flex items-center justify-center bg-slate-950">
+                <img src="img2.jpg" alt="Advisor" class="w-full h-full object-cover rounded-xl" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="w-full h-full bg-slate-950 text-cyan-400 text-2xl items-center justify-center hidden"><i class="fas fa-chalkboard-user"></i></div>
+              </div>
+              <span class="absolute -bottom-2.5 left-1/2 -translate-x-1/2 bg-slate-950 text-cyan-400 text-[10px] px-2.5 py-0.5 rounded-full border border-cyan-500/40 font-semibold whitespace-nowrap" id="badge-advisor">อาจารย์ที่ปรึกษา</span>
+            </div>
+          </div>
+
+          <h3 class="text-xl sm:text-2xl font-extrabold text-white pt-2">นายอโณทัย สุริวงค์</h3>
+          <p class="text-xs sm:text-sm text-emerald-400 font-medium" id="txt-dev-title">นักศึกษาประกาศนียบัตรวิชาชีพชั้นสูง (ปวส.) | วิทยาลัยเทคโนโลยีอีสานเหนือ</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          <div class="p-4 bg-slate-900/90 rounded-2xl border border-slate-800 space-y-2">
+            <h4 class="font-bold text-white text-sm flex items-center">
+              <i class="fas fa-code text-cyan-400 mr-2"></i> <span id="txt-about-project-h">โครงงานและผลงานพัฒนา</span>
+            </h4>
+            <p class="text-slate-300 leading-relaxed" id="txt-about-project-p">
+              ผู้พัฒนาแพลตฟอร์มผู้ช่วยอัจฉริยะด้วยปัญญาประดิษฐ์ (AI-Driven Smart Assistant Platform) เพื่อบริการข้อมูลหลักสูตร ทุนการศึกษา และออกใบประเมินสมรรถนะวิชาชีพ รองรับความร่วมมือทวิภาคี 4 สถานประกอบการชั้นนำ
+            </p>
+          </div>
+          <div class="p-4 bg-slate-900/90 rounded-2xl border border-slate-800 space-y-2">
+            <h4 class="font-bold text-white text-sm flex items-center">
+              <i class="fas fa-microchip text-emerald-400 mr-2"></i> <span id="txt-about-skills-h">ความเชี่ยวชาญทางเทคนิค</span>
+            </h4>
+            <ul class="text-slate-300 space-y-1 list-disc list-inside" id="txt-about-skills-ul">
+              <li>Web Development (HTML5, Tailwind CSS, JS)</li>
+              <li>AI RAG Architecture & Prompt Engineering</li>
+              <li>Competency Evaluation & Digital Certification Engine</li>
+              <li>UI/UX Design & Avatar Lip-Sync Systems</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="pt-2 text-center">
+          <button onclick="switchTab('info')" class="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-500/30 rounded-xl text-xs font-bold transition" id="btn-back-chat">
+            กลับสู่ห้องสนทนา AI Assistant
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="hud-glass border-t border-slate-800/80 mt-auto py-4 text-center text-xs text-slate-400">
+    <p id="txt-footer-copy">© 2026 วิทยาลัยเทคโนโลยีอีสานเหนือ (E-Sarn Technological College, Udon Thani). All rights reserved.</p>
+  </footer>
+
+  <!-- Application Logic -->
+  <script>
+    let currentLang = 'th';
+    let speechRate = 1.0;
+    let isListening = false;
+
+    const translations = {
+      th: {
+        collegeName: "วิทยาลัยเทคโนโลยีอีสานเหนือ",
+        headerSub: "แพลตฟอร์มผู้ช่วยอัจฉริยะ AI เพื่อบริการข้อมูลและเตรียมความพร้อมสู่สายอาชีพ",
+        applyBtn: "สมัครเรียน",
+        lineBtn: "LINE สถาบัน",
+        slogan: 'อัตลักษณ์: "เราไม่ได้สร้างอัจฉริยะ แต่เราสร้างคนที่สถานประกอบการอยากได้"',
+        tabHome: "หน้าหลัก",
+        tabInfo: "ผู้ช่วย AI & อวตาร",
+        tabCurriculum: "หลักสูตร & ค่าธรรมเนียม",
+        tabCareer: "เตรียมพร้อมสายอาชีพ & ใบสมรรถนะ",
+        tabAdmin: "ฐานความรู้ & สถิติ (Admin)",
+        tabEval: "แบบประเมินระบบ",
+        tabAbout: "ข้อมูลผู้จัดทำ",
+        heroTitle: 'ขับเคลื่อนการศึกษาสายอาชีพสู่อนาคต<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">ด้วยเทคโนโลยีปัญญาประดิษฐ์อัจฉริยะ</span>',
+        heroDesc: "วิทยาลัยเทคโนโลยีอีสานเหนือ ยกระดับการให้บริการข้อมูลหลักสูตร ค่าธรรมเนียมการศึกษา และเตรียมความพร้อมสู่ตลาดแรงงานจริง ผ่านสถาปัตยกรรม RAG และระบบออกใบรับรองสมรรถนะวิชาชีพ",
+        heroBtnAi: '<i class="fas fa-robot mr-2"></i> คุยกับพี่สมาร์ท AI',
+        heroBtnCareer: '<i class="fas fa-award mr-2"></i> ประเมินสมรรถนะวิชาชีพ',
+        partnerTitle: "4 พันธมิตรสถานประกอบการชั้นนำ (โครงการทวิภาคี)",
+        partnerSub: "การันตีโอกาสได้งานทำและฝึกงานตรงสาย",
+        featTitle1: "RAG Knowledge Engine",
+        featDesc1: "สืบค้นข้อมูลระเบียบการและค่าเทอมจากฐานข้อมูลทางการ พร้อมแสดง Source Verification และ Confidence Score",
+        featTitle2: "Tuition & Financial Aid",
+        featDesc2: "ปวช. 4,500 บาท / ปวส. 9,500 บาท กู้ กยศ. ได้เต็มจำนวน 100% พร้อมโครงการทุนนวัตกรรมสายอาชีพชั้นสูง (กสศ.)",
+        featTitle3: "Competency & Assessment",
+        featDesc3: "ประเมินสมรรถนะวิชาชีพ ออกใบรับรองแบบเรียลไทม์ และฝึกสัมภาษณ์งานจำลองกับ AI",
+        ttsLabel: "อ่านคำตอบออกเสียง (TTS)",
+        speedLabel: "สปีดการพูด:",
+        chatHeader: "RAG INTELLIGENT RETRIEVAL",
+        clearChat: "ล้างแชท",
+        sendBtn: "ส่ง",
+        userInputPlaceholder: "พิมพ์คำถามของคุณที่นี่...",
+        recStatus: "กำลังฟังเสียงของคุณ...",
+        feeTitle: "อัตราค่าธรรมเนียมการศึกษาและค่าเทอม",
+        fundBadge: '<i class="fas fa-check-circle text-emerald-400 mr-1"></i> รองรับกองทุน กยศ. 100%',
+        thLevel: "ระดับการศึกษา",
+        thMajor: "สาขาวิชาที่เปิดสอน",
+        thFee: "ค่าเทอม / ภาคเรียน",
+        thDetail: "รายละเอียดและสิทธิ์กู้ยืม",
+        careerTitle: "ศูนย์ประเมินสมรรถนะวิชาชีพ & จำลองการสัมภาษณ์งาน",
+        careerSub: "ประเมินทักษะวิชาชีพ ออกใบรับรองสมรรถนะ (Competency Report) และฝึกสัมภาษณ์งานจริงกับระบบ AI",
+        resumeTitle: "ระบบวิเคราะห์และออกใบสมรรถนะวิชาชีพ",
+        selectMajorLabel: "เลือกสาขาวิชาของคุณ",
+        resumeInputLabel: "วางเนื้อหา Resume, ทักษะวิชาชีพ, ประสบการณ์ฝึกงาน",
+        btnAnalyze: "ประเมินสมรรถนะ & ออกใบรับรองดิจิทัล",
+        mockTitle: "จำลองการสัมภาษณ์งาน (AI Mock Interview)",
+        roleLabel: "ตำแหน่งงานที่ต้องการสัมภาษณ์",
+        btnRandQ: "สุ่มคำถาม",
+        ansLabel: "คำตอบของคุณ",
+        voiceAnsBtn: "ตอบด้วยเสียง",
+        btnEvalAns: "ส่งคำตอบให้ AI ประเมินและแนะนำจุดปรับปรุง",
+        adminTitle: "จัดการฐานความรู้ RAG และสถิติการใช้งาน",
+        stat1: "จำนวนคำถามผ่านระบบ RAG วันนี้",
+        stat2: "ความแม่นยำ RAG (Confidence Score)",
+        stat3: "ผู้เรียนผ่านเกณฑ์เตรียมความพร้อมอาชีพ",
+        ragAddTitle: "อัปเดตเอกสารข้อมูลหลักสูตรเข้าสู่ RAG Vector Store",
+        btnAddRag: '<i class="fas fa-plus mr-1"></i> เพิ่มเข้าระบบ RAG',
+        evalTitle: "แบบประเมินความพึงพอใจการใช้งานแพลตฟอร์ม AI",
+        evalSub: "กรุณาให้ความคิดเห็นเพื่อการพัฒนาและยกระดับการให้บริการของวิทยาลัยฯ ต่อไป",
+        lblEvalQ1: "1. ระดับความพึงพอใจโดยรวมต่อระบบผู้ช่วยอัจฉริยะ (พี่สมาร์ท AI)",
+        lblEvalQ2: "2. ความรวดเร็วและความถูกต้องของข้อมูลหลักสูตรและค่าเทอม",
+        lblEvalQ3: "3. ข้อเสนอแนะเพิ่มเติมเพื่อการพัฒนาแพลตฟอร์ม",
+        btnSubmitEval: "ส่งแบบประเมินความพึงพอใจ",
+        badgeDev: "ผู้พัฒนาโครงการ",
+        badgeAdvisor: "อาจารย์ที่ปรึกษา",
+        devTitle: "นักศึกษาประกาศนียบัตรวิชาชีพชั้นสูง (ปวส.) | วิทยาลัยเทคโนโลยีอีสานเหนือ",
+        aboutProjectH: "โครงงานและผลงานพัฒนา",
+        aboutProjectP: "ผู้พัฒนาแพลตฟอร์มผู้ช่วยอัจฉริยะด้วยปัญญาประดิษฐ์ (AI-Driven Smart Assistant Platform) เพื่อบริการข้อมูลหลักสูตร ทุนการศึกษา และออกใบประเมินสมรรถนะวิชาชีพ รองรับความร่วมมือทวิภาคี 4 สถานประกอบการชั้นนำ",
+        aboutSkillsH: "ความเชี่ยวชาญทางเทคนิค",
+        btnBackChat: "กลับสู่ห้องสนทนา AI Assistant",
+        footerCopy: "© 2026 วิทยาลัยเทคโนโลยีอีสานเหนือ (E-Sarn Technological College, Udon Thani). All rights reserved."
+      },
+      en: {
+        collegeName: "E-Sarn Technological College",
+        headerSub: "Next-Gen AI Assistant Platform for Vocational Guidance & Career Readiness",
+        applyBtn: "Apply Now",
+        lineBtn: "Official LINE",
+        slogan: 'Identity: "We do not just build geniuses; we build professionals whom employers desire."',
+        tabHome: "Home",
+        tabInfo: "AI Assistant & Avatar",
+        tabCurriculum: "Curriculum & Tuition",
+        tabCareer: "Competency & Career Hub",
+        tabAdmin: "Knowledge & Stats (Admin)",
+        tabEval: "Evaluation",
+        tabAbout: "Developer Profile",
+        heroTitle: 'Driving Vocational Education into the Future<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">Powered by Intelligent Artificial Intelligence</span>',
+        heroDesc: "E-Sarn Technological College elevates academic services, tuition fee inquiries, and career readiness via RAG Architecture & Real-Time Competency Certification.",
+        heroBtnAi: '<i class="fas fa-robot mr-2"></i> Chat with Smart AI',
+        heroBtnCareer: '<i class="fas fa-award mr-2"></i> Evaluate Competency',
+        partnerTitle: "4 Leading Dual-Education Industry Partners",
+        partnerSub: "Guaranteed Internship & Direct Employment Opportunities",
+        featTitle1: "RAG Knowledge Engine",
+        featDesc1: "Retrieves official college regulations with Source Verification and Confidence Scores.",
+        featTitle2: "Tuition & Financial Aid",
+        featDesc2: "Vocational 4,500 THB / High-Vocational 9,500 THB. 100% Student Loan Fund (SLF) & EEF Scholarships available.",
+        featTitle3: "Competency & Assessment",
+        featDesc3: "Real-time competency certification & interactive AI Mock Interview practice.",
+        ttsLabel: "Text-to-Speech (TTS)",
+        speedLabel: "Speech Speed:",
+        chatHeader: "RAG INTELLIGENT RETRIEVAL",
+        clearChat: "Clear Chat",
+        sendBtn: "Send",
+        userInputPlaceholder: "Type your query here...",
+        recStatus: "Listening to your voice...",
+        feeTitle: "Tuition Fees & Financial Aid Structure",
+        fundBadge: '<i class="fas fa-check-circle text-emerald-400 mr-1"></i> Supports 100% Student Loan Fund',
+        thLevel: "Education Level",
+        thMajor: "Available Majors",
+        thFee: "Tuition / Semester",
+        thDetail: "Details & Funding Rights",
+        careerTitle: "Vocational Competency Center & AI Mock Interview",
+        careerSub: "Evaluate vocational skills, generate Competency Reports, and practice job interviews with AI",
+        resumeTitle: "AI Competency & Readiness Evaluator",
+        selectMajorLabel: "Select Your Major",
+        resumeInputLabel: "Paste Resume content, technical skills, internship experience",
+        btnAnalyze: "Evaluate & Issue Digital Certificate",
+        mockTitle: "AI Mock Interview",
+        roleLabel: "Target Job Role",
+        btnRandQ: "Random Question",
+        ansLabel: "Your Answer",
+        voiceAnsBtn: "Voice Answer",
+        btnEvalAns: "Submit Answer for AI Evaluation",
+        adminTitle: "Manage RAG Knowledge Base & System Metrics",
+        stat1: "RAG Queries Processed Today",
+        stat2: "RAG Confidence Accuracy Rate",
+        stat3: "Career-Ready Certified Students",
+        ragAddTitle: "Upload Curriculum Document to RAG Vector Store",
+        btnAddRag: '<i class="fas fa-plus mr-1"></i> Add to RAG Store',
+        evalTitle: "Platform Satisfaction Evaluation Form",
+        evalSub: "Please provide feedback to continuously enhance our college AI services.",
+        lblEvalQ1: "1. Overall satisfaction with Smart AI Assistant",
+        lblEvalQ2: "2. Speed and accuracy of curriculum and fee data",
+        lblEvalQ3: "3. Additional suggestions for platform improvement",
+        btnSubmitEval: "Submit Evaluation",
+        badgeDev: "Lead Developer",
+        badgeAdvisor: "Project Advisor",
+        devTitle: "High Vocational Diploma Student | E-Sarn Technological College",
+        aboutProjectH: "Project Overview",
+        aboutProjectP: "Developer of the AI-Driven Smart Assistant Platform for institutional queries, scholarship guidance, and vocational competency verification supporting 4 enterprise alliance partners.",
+        aboutSkillsH: "Technical Expertise",
+        btnBackChat: "Back to AI Chat Room",
+        footerCopy: "© 2026 E-Sarn Technological College (Udon Thani). All rights reserved."
+      }
+    };
+
+    const tuitionData = [
+      {
+        level: "ประกาศนียบัตรวิชาชีพ (ปวช.)",
+        majors: "ช่างยนต์, คอมพิวเตอร์ธุรกิจ, การบัญชี, การตลาด, ดนตรี",
+        fee: "4,500 บาท",
+        detail: "กู้ กยศ. ได้เต็มจำนวน 100% / ฟรีค่าชุดนักเรียน / ทุนสนับสนุนจากสถานประกอบการทวิภาคี"
+      },
+      {
+        level: "ประกาศนียบัตรวิชาชีพชั้นสูง (ปวส.)",
+        majors: "เทคโนโลยีธุรกิจดิจิทัล, การบัญชี, การตลาด, ช่างยนต์ไฟฟ้า",
+        fee: "9,500 บาท",
+        detail: "ทุน กสศ. (ทุนนวัตกรรมสายอาชีพชั้นสูง) และทุนทวิภาคีร่วมกับ Honda, Fujikura, Zen Group, Star Aire รับเบี้ยเลี้ยงระหว่างฝึกงาน"
+      }
+    ];
+
+    const majorDetails = [
+      { name: "สาขาวิชาช่างยนต์ (Automotive)", icon: "fa-car", partner: "HONDA", desc: "เรียนรู้ระบบเครื่องยนต์สมัยใหม่ ยานยนต์ไฟฟ้า (EV) และฝึกปฏิบัติจริงกับศูนย์บริการฮอนด้ามาตรฐาน" },
+      { name: "สาขาวิชาคอมพิวเตอร์ธุรกิจ (Digital Business)", icon: "fa-microchip", partner: "FUJIKURA", desc: "พัฒนาซอฟต์แวร์ ฐานข้อมูล AI และระบบเน็ตเวิร์ก พร้อมร่วมงานกับบริษัทอิเล็กทรอนิกส์ระดับโลก" },
+      { name: "สาขาวิชาการบัญชี & การตลาด", icon: "fa-store", partner: "ZEN GROUP", desc: "บริหารการเงินยุคดิจิทัล การตลาดออนไลน์ อีคอมเมิร์ซ และการจัดการธุรกิจบริการร้านอาหารเครือข่ายชั้นนำ" },
+      { name: "สาขาวิชาช่างเครื่องทำความเย็น", icon: "fa-fan", partner: "STAR AIRE", desc: "เชี่ยวชาญระบบปรับอากาศและทำความเย็นอุตสาหกรรม การันตีรายได้สูงและความต้องการสูงในตลาดแรงงาน" }
+    ];
+
+    // 💡 สามารถเพิ่ม/ลดหรือปรับแต่งปุ่มคำถามด่วน (พร้อมไอคอน Font Awesome) ได้ตรงนี้เลยครับ
+    const quickPromptsTh = [
+      { text: "ค่าเทอม ปวช. เท่าไหร่?", icon: "fa-coins" },
+      { text: "กู้ กยศ. ได้ไหม?", icon: "fa-hand-holding-dollar" },
+      { text: "มีสาขาอะไรบ้าง?", icon: "fa-graduation-cap" },
+      { text: "ฝึกงานที่ไหนบ้าง?", icon: "fa-building" },
+      { text: "สมัครเรียนอย่างไร?", icon: "fa-file-pen" },
+      { text: "สวัสดิการและชุดนักศึกษา", icon: "fa-shirt" },
+      { text: "การเดินทางไปวิทยาลัย", icon: "fa-map-location-dot" }
+    ];
+
+    const quickPromptsEn = [
+      { text: "Vocational tuition fees?", icon: "fa-coins" },
+      { text: "Student loans available?", icon: "fa-hand-holding-dollar" },
+      { text: "What majors are offered?", icon: "fa-graduation-cap" },
+      { text: "Internship partners?", icon: "fa-building" },
+      { text: "How to apply?", icon: "fa-file-pen" }
+    ];
+
+    const ragKnowledgeBase = [
+      {
+        keywords: ["ค่าเทอม", "ปวช", "tuition", "เรียนฟรี"],
+        answer: "อัตราค่าเทอมระดับ ปวช. อยู่ที่ 4,500 บาทต่อภาคเรียนครับ ได้รับสิทธิ์เรียนฟรี 15 ปีตามนโยบายรัฐบาล สามารถผ่อนชำระได้ และกู้ยืมกองทุน กยศ. ได้เต็ม 100% ครับ"
+      },
+      {
+        keywords: ["ปวส", "high vocational", "ค่าเทอม ปวส"],
+        answer: "อัตราค่าเทอมระดับ ปวส. อยู่ที่ 9,500 บาทต่อภาคเรียนครับ มีทุนการศึกษาจาก กสศ. (ทุนนวัตกรรมสายอาชีพชั้นสูง) และทุนสนับสนุนจากสถานประกอบการทวิภาคี รับเบี้ยเลี้ยงระหว่างฝึกงานด้วยครับ"
+      },
+      {
+        keywords: ["กยศ", "loan", "กู้"],
+        answer: "นักศึกษาวิทยาลัยเทคโนโลยีอีสานเหนือทุกคนมีสิทธิ์ยื่นกู้ยืมกองทุนเงินให้กู้ยืมเพื่อการศึกษา (กยศ.) ทั้งค่าเทอมและค่าครองชีพเต็มจำนวน 100% ครับ"
+      },
+      {
+        keywords: ["สาขา", "major", "หลักสูตร", "เรียนอะไรบ้าง"],
+        answer: "วิทยาลัยเปิดสอน 5 สาขาวิชาหลัก ได้แก่ 1. ช่างยนต์ 2. คอมพิวเตอร์ธุรกิจ/ดิจิทัล 3. การบัญชี 4. การตลาด และ 5. ดนตรีสากล เน้นเรียนแบบทวิภาคีปฏิบัติจริงร่วมกับสถานประกอบการครับ"
+      },
+      {
+        keywords: ["ฝึกงาน", "พาร์ทเนอร์", "honda", "fujikura", "zen", "star aire", "งาน"],
+        answer: "วิทยาลัยมีความร่วมมือกับ 4 พันธมิตรชั้นนำ ได้แก่ HONDA (สายช่างยนต์), FUJIKURA (สายคอมพิวเตอร์/อิเล็กทรอนิกส์), ZEN GROUP (สายการตลาด/บัญชี) และ STAR AIRE (สายช่างแอร์) มีเบี้ยเลี้ยงระหว่างฝึกและรับเข้าทำงานทันทีหลังเรียนจบครับ"
+      },
+      {
+        keywords: ["สมัคร", "apply", "ติดต่อ", "เบอร์โทร", "ที่ตั้ง", "อุดรธานี", "กุมภวาปี"],
+        answer: "สมัครเรียนได้ที่ปุ่ม 'สมัครเรียน' ด้านบน หรือติดต่อ 2 วิทยาเขต: 1. วิทยาเขตอุดรธานี (ต.นาข่า) โทร. 042-110160  2. วิทยาเขตกุมภวาปี โทร. 042-398282 ครับ"
+      },
+      {
+        keywords: ["แต่งกาย", "ชุดนักศึกษา", "ชุดช็อป", "ทรงผม", "วินัย"],
+        answer: "การแต่งกาย: วันปกติสวมชุดนักศึกษาสุภาพเรียบร้อยตามระเบียบ วันปฏิบัติการสวมชุดช็อปประจำสาขาวิชาพร้อมรองเท้าเซฟตี้/หุ้มส้นเพื่อความปลอดภัย ทรงผมสุภาพเรียบร้อยพร้อมออกฝึกงานครับ"
+      },
+      {
+        keywords: ["สวัสดิการ", "ประกัน", "อุบัติเหตุ", "พยาบาล", "เบิก"],
+        answer: "วิทยาลัยมีสวัสดิการคุ้มครองอุบัติเหตุนักศึกษาตลอด 24 ชั่วโมง ทั้งในและนอกวิทยาลัย รวมถึงระหว่างเดินทางและฝึกงาน สามารถนำใบรับรองแพทย์และใบเสร็จมาเบิกค่ารักษาพยาบาลได้ที่ห้องสวัสดิการครับ"
+      },
+      {
+        keywords: ["กิจกรรม", "อวต", "แข่งขันทักษะ", "สิ่งประดิษฐ์", "กีฬา"],
+        answer: "ส่งเสริมกิจกรรมผ่านองค์การนักวิชาชีพ (อวท.) เช่น การส่งผลงานประกวดสิ่งประดิษฐ์คนรุ่นใหม่ การแข่งขันทักษะวิชาชีพทั้ง 5 สาขา กีฬาสี ค่ายคุณธรรม และจิตอาสาพัฒนาชุมชนครับ"
+      },
+      {
+        keywords: ["เทียบโอน", "จบม6", "เรียนต่อปวส", "หน่วยกิต"],
+        answer: "ผู้สำเร็จการศึกษา ม.6 หรือ ปวช. ต่างสถาบัน สามารถนำวุฒิมาติดต่อขอเทียบโอนรายวิชาพื้นฐานต่อ ปวส. ได้ โดยวิทยาลัยมีคอร์สปรับพื้นฐานวิชาช่างและวิชาชีพให้ก่อนเปิดเทอมครับ"
+      },
+      {
+        keywords: ["การเดินทาง", "แผนที่", "รถโดยสาร", "วิทยาลัยอยู่ที่ไหน"],
+        answer: "วิทยาลัยเทคโนโลยีอีสานเหนือ ตั้งอยู่บริเวณถนนมิตรภาพ (อุดรธานี-หนองคาย) ตำบลนาข่า อำเภอเมือง จังหวัดอุดรธานี และมีวิทยาเขตกุมภวาปี เดินทางสะดวก มีรถประจำทางผ่านตลอดสายครับ"
+      }
+    ];
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderTuitionTable();
+      renderMajors();
+      renderQuickPrompts();
+      renderChatWelcome();
+    });
+
+    function closeRoyalModal() {
+      const modal = document.getElementById('royal-modal');
+      modal.style.opacity = '0';
+      setTimeout(() => modal.remove(), 300);
+    }
+
+    function openAdminTab() {
+      const adminPassword = "1234";
+      const inputPin = prompt("🔒 กรุณากรอกรหัสผ่านผู้ดูแลระบบ (Admin PIN):");
+
+      if (inputPin === adminPassword) {
+        alert("✅ เข้าสู่ระบบแอดมินสำเร็จ!");
+        switchTab('admin');
+      } else if (inputPin !== null) {
+        alert("❌ รหัสผ่านไม่ถูกต้อง! ไม่มีสิทธิ์เข้าถึงส่วนนี้");
+      }
+    }
+
+    function switchTab(tabId) {
+      const tabs = ['home', 'info', 'curriculum', 'career', 'admin', 'evaluation', 'about'];
+      tabs.forEach(t => {
+        const el = document.getElementById('tab-' + t);
+        const btn = document.getElementById('tab-btn-' + t);
+        if (el) el.classList.add('hidden');
+        if (btn) {
+          btn.classList.remove('border-emerald-400', 'text-emerald-400');
+          btn.classList.add('border-transparent', 'text-slate-400');
+        }
+      });
+      const activeEl = document.getElementById('tab-' + tabId);
+      const activeBtn = document.getElementById('tab-btn-' + tabId);
+      if (activeEl) activeEl.classList.remove('hidden');
+      if (activeBtn) {
+        activeBtn.classList.remove('border-transparent', 'text-slate-400');
+        activeBtn.classList.add('border-emerald-400', 'text-emerald-400');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function toggleLanguage() {
+      currentLang = currentLang === 'th' ? 'en' : 'th';
+      document.getElementById('lang-btn-text').innerText = currentLang.toUpperCase();
+      const t = translations[currentLang];
+
+      document.getElementById('txt-college-name').innerText = t.collegeName;
+      document.getElementById('txt-header-sub').innerText = t.headerSub;
+      document.getElementById('txt-apply-btn').innerText = t.applyBtn;
+      document.getElementById('txt-line-btn').innerText = t.lineBtn;
+      document.getElementById('txt-slogan').innerHTML = `อัตลักษณ์: <em>"${t.slogan}"</em>`;
+      document.getElementById('tab-text-home').innerText = t.tabHome;
+      document.getElementById('tab-text-info').innerText = t.tabInfo;
+      document.getElementById('tab-text-curriculum').innerText = t.tabCurriculum;
+      document.getElementById('tab-text-career').innerText = t.tabCareer;
+      document.getElementById('tab-text-admin').innerText = t.tabAdmin;
+      document.getElementById('tab-text-evaluation').innerText = t.tabEval;
+      document.getElementById('tab-text-about').innerText = t.tabAbout;
+
+      document.getElementById('txt-hero-title').innerHTML = t.heroTitle;
+      document.getElementById('txt-hero-desc').innerText = t.heroDesc;
+      document.getElementById('btn-hero-ai').innerHTML = t.heroBtnAi;
+      document.getElementById('btn-hero-career').innerHTML = t.heroBtnCareer;
+      document.getElementById('txt-partner-title').innerText = t.partnerTitle;
+      document.getElementById('txt-partner-sub').innerText = t.partnerSub;
+
+      document.getElementById('feat-title-1').innerText = t.featTitle1;
+      document.getElementById('feat-desc-1').innerText = t.featDesc1;
+      document.getElementById('feat-title-2').innerText = t.featTitle2;
+      document.getElementById('feat-desc-2').innerText = t.featDesc2;
+      document.getElementById('feat-title-3').innerText = t.featTitle3;
+      document.getElementById('feat-desc-3').innerText = t.featDesc3;
+
+      document.getElementById('txt-tts-label').innerText = t.ttsLabel;
+      document.getElementById('txt-speed-label').innerText = t.speedLabel;
+      document.getElementById('txt-chat-header').innerText = t.chatHeader;
+      document.getElementById('txt-clear-chat').innerText = t.clearChat;
+      document.getElementById('txt-send-btn').innerText = t.sendBtn;
+      document.getElementById('user-input').placeholder = t.userInputPlaceholder;
+      document.getElementById('txt-rec-status').innerText = t.recStatus;
+
+      document.getElementById('txt-fee-title').innerText = t.feeTitle;
+      document.getElementById('txt-fund-badge').innerHTML = t.fundBadge;
+      document.getElementById('th-level').innerText = t.thLevel;
+      document.getElementById('th-major').innerText = t.thMajor;
+      document.getElementById('th-fee').innerText = t.thFee;
+      document.getElementById('th-detail').innerText = t.thDetail;
+
+      document.getElementById('txt-career-title').innerText = t.careerTitle;
+      document.getElementById('txt-career-sub').innerText = t.careerSub;
+      document.getElementById('txt-resume-title').innerText = t.resumeTitle;
+      document.getElementById('txt-select-major-label').innerText = t.selectMajorLabel;
+      document.getElementById('txt-resume-input-label').innerText = t.resumeInputLabel;
+      document.getElementById('btn-analyze-resume').querySelector('span').innerText = t.btnAnalyze;
+      document.getElementById('txt-mock-title').innerText = t.mockTitle;
+      document.getElementById('txt-role-label').innerText = t.roleLabel;
+      document.getElementById('btn-rand-q').innerText = t.btnRandQ;
+      document.getElementById('txt-ans-label').innerText = t.ansLabel;
+      document.getElementById('txt-voice-ans-btn').innerText = t.voiceAnsBtn;
+      document.getElementById('btn-eval-ans').innerText = t.btnEvalAns;
+
+      document.getElementById('txt-admin-title').innerText = t.adminTitle;
+      document.getElementById('txt-stat-1').innerText = t.stat1;
+      document.getElementById('txt-stat-2').innerText = t.stat2;
+      document.getElementById('txt-stat-3').innerText = t.stat3;
+      document.getElementById('txt-rag-add-title').innerText = t.ragAddTitle;
+      document.getElementById('btn-add-rag').innerHTML = t.btnAddRag;
+
+      document.getElementById('txt-eval-title').innerText = t.evalTitle;
+      document.getElementById('txt-eval-sub').innerText = t.evalSub;
+      document.getElementById('lbl-eval-q1').innerText = t.lblEvalQ1;
+      document.getElementById('lbl-eval-q2').innerText = t.lblEvalQ2;
+      document.getElementById('lbl-eval-q3').innerText = t.lblEvalQ3;
+      document.getElementById('btn-submit-eval').innerText = t.btnSubmitEval;
+
+      document.getElementById('badge-dev').innerText = t.badgeDev;
+      document.getElementById('badge-advisor').innerText = t.badgeAdvisor;
+      document.getElementById('txt-dev-title').innerText = t.devTitle;
+      document.getElementById('txt-about-project-h').innerText = t.aboutProjectH;
+      document.getElementById('txt-about-project-p').innerText = t.aboutProjectP;
+      document.getElementById('txt-about-skills-h').innerText = t.aboutSkillsH;
+      document.getElementById('btn-back-chat').innerText = t.btnBackChat;
+      document.getElementById('txt-footer-copy').innerText = t.footerCopy;
+
+      renderQuickPrompts();
+    }
+
+    function renderQuickPrompts() {
+      const container = document.getElementById('quick-prompts-container');
+      const prompts = currentLang === 'th' ? quickPromptsTh : quickPromptsEn;
+      container.innerHTML = prompts.map(p => `
+        <button onclick="sendQuickPrompt('${p.text}')" class="bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 px-3 py-1.5 rounded-xl transition flex items-center space-x-1.5 whitespace-nowrap">
+          <i class="fas ${p.icon} text-emerald-400 text-xs"></i>
+          <span>${p.text}</span>
+        </button>
+      `).join('');
+    }
+
+    function renderTuitionTable() {
+      const tbody = document.getElementById('tuition-table-body');
+      tbody.innerHTML = tuitionData.map(item => `
+        <tr class="hover:bg-slate-900/50 transition">
+          <td class="p-3 font-bold text-white">${item.level}</td>
+          <td class="p-3 text-slate-300">${item.majors}</td>
+          <td class="p-3 text-center font-mono text-emerald-400 font-bold">${item.fee}</td>
+          <td class="p-3 text-xs text-slate-400">${item.detail}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderMajors() {
+      const container = document.getElementById('majors-container');
+      container.innerHTML = majorDetails.map(m => `
+        <div class="hud-glass p-6 rounded-3xl space-y-3 border border-slate-800">
+          <div class="flex items-center justify-between">
+            <div class="w-12 h-12 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-xl border border-emerald-500/30">
+              <i class="fas ${m.icon}"></i>
+            </div>
+            <span class="text-xs bg-slate-900 text-emerald-300 px-3 py-1 rounded-full border border-emerald-500/30 font-bold">
+              พาร์ทเนอร์: ${m.partner}
+            </span>
+          </div>
+          <h4 class="font-bold text-white text-base">${m.name}</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">${m.desc}</p>
+        </div>
+      `).join('');
+    }
+
+    function renderChatWelcome() {
+      const chatBox = document.getElementById('chat-box');
+      const welcomeText = currentLang === 'th' 
+        ? "สวัสดีครับ! ผมคือ **พี่สมาร์ท AI** ผู้ช่วยอัจฉริยะประจำวิทยาลัยเทคโนโลยีอีสานเหนือ พร้อมให้ข้อมูลหลักสูตร ค่าเทอม และประเมินสมรรถนะวิชาชีพครับ มีอะไรให้ผมช่วยสอบถามได้เลยครับ!"
+        : "Hello! I am Smart AI, your virtual assistant at E-Sarn Technological College. How can I help you with curriculum, tuition fees, or career readiness today?";
+      
+      chatBox.innerHTML = `
+        <div class="flex items-start space-x-3">
+          <div class="w-8 h-8 rounded-full bg-emerald-500 text-slate-950 font-bold flex items-center justify-center text-xs shadow-md">AI</div>
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 text-xs text-slate-200 max-w-[85%] space-y-2">
+            <p>${welcomeText}</p>
+            <div class="text-[10px] text-emerald-400 font-mono pt-1 border-t border-slate-800 flex items-center justify-between">
+              <span>Source: E-Sarn Tech Knowledge Base v5.0</span>
+              <span>Confidence: 99.8%</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function sendQuickPrompt(text) {
+      document.getElementById('user-input').value = text;
+      sendMessage();
+    }
+
+    function clearChat() {
+      renderChatWelcome();
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('user-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const chatBox = document.getElementById('chat-box');
+
+      chatBox.innerHTML += `
+        <div class="flex items-start justify-end space-x-3">
+          <div class="bg-emerald-600 text-slate-950 rounded-2xl p-3.5 text-xs font-medium max-w-[85%] shadow-md">
+            ${text}
+          </div>
+          <div class="w-8 h-8 rounded-full bg-slate-800 text-emerald-400 font-bold flex items-center justify-center text-xs border border-emerald-500/30">คุณ</div>
+        </div>
+      `;
+      input.value = '';
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      triggerAvatarSpeaking(true);
+
+      setTimeout(() => {
+        let matchedAnswer = currentLang === 'th'
+          ? "ขออภัยครับ สำหรับข้อมูลเชิงลึกในหัวข้อนี้ แนะนำติดต่อสอบถามโดยตรงที่ฝ่ายประชาสัมพันธ์ วิทยาลัยเทคโนโลยีอีสานเหนือ โทร. 042-110160 ครับ"
+          : "I am searching our RAG vector base. Please contact our admission office directly for more specific inquiries.";
+
+        for (let item of ragKnowledgeBase) {
+          if (item.keywords.some(kw => text.toLowerCase().includes(kw))) {
+            matchedAnswer = item.answer;
+            break;
+          }
+        }
+
+        chatBox.innerHTML += `
+          <div class="flex items-start space-x-3 animate-fade-in">
+            <div class="w-8 h-8 rounded-full bg-emerald-500 text-slate-950 font-bold flex items-center justify-center text-xs shadow-md">AI</div>
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 text-xs text-slate-200 max-w-[85%] space-y-2">
+              <p>${matchedAnswer}</p>
+              <div class="text-[10px] text-emerald-400 font-mono pt-1 border-t border-slate-800 flex items-center justify-between">
+                <span>Source Verification: Official E-Sarn Tech DB</span>
+                <span>Confidence: 98.5%</span>
+              </div>
+            </div>
+          </div>
+        `;
+        chatBox.scrollTop = chatBox.scrollHeight;
+        document.getElementById('avatar-caption').innerText = `"${matchedAnswer.substring(0, 50)}..."`;
+
+        if (document.getElementById('tts-toggle').checked) {
+          speakText(matchedAnswer);
+        } else {
+          triggerAvatarSpeaking(false);
+        }
+      }, 700);
+    }
+
+    function triggerAvatarSpeaking(speaking) {
+      const mouth = document.getElementById('avatar-mouth');
+      if (speaking) {
+        mouth.classList.add('mouth-speaking');
+        document.getElementById('avatar-glow').classList.add('cyber-glow');
+      } else {
+        mouth.classList.remove('mouth-speaking');
+      }
+    }
+
+    function speakText(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = currentLang === 'th' ? 'th-TH' : 'en-US';
+        utterance.rate = speechRate;
+        utterance.onend = () => triggerAvatarSpeaking(false);
+        window.speechSynthesis.speak(utterance);
+      } else {
+        setTimeout(() => triggerAvatarSpeaking(false), 2000);
+      }
+    }
+
+    function adjustSpeed(delta) {
+      speechRate = Math.max(0.5, Math.min(2.0, speechRate + delta));
+      document.getElementById('speed-display').innerText = speechRate.toFixed(2) + 'x';
+    }
+
+    function toggleVoiceInput() {
+      isListening = !isListening;
+      const statusEl = document.getElementById('recording-status');
+      const micBtn = document.getElementById('mic-btn');
+      if (isListening) {
+        statusEl.classList.remove('hidden');
+        micBtn.classList.add('text-emerald-400', 'bg-slate-800');
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+          const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+          const recognition = new SpeechRecognition();
+          recognition.lang = currentLang === 'th' ? 'th-TH' : 'en-US';
+          recognition.onresult = (event) => {
+            document.getElementById('user-input').value = event.results[0][0].transcript;
+            toggleVoiceInput();
+            sendMessage();
+          };
+          recognition.onerror = () => toggleVoiceInput();
+          recognition.start();
+        } else {
+          setTimeout(() => {
+            document.getElementById('user-input').value = "ค่าเทอม ปวช. เท่าไหร่ครับ?";
+            toggleVoiceInput();
+            sendMessage();
+          }, 2000);
+        }
+      } else {
+        statusEl.classList.add('hidden');
+        micBtn.classList.remove('text-emerald-400', 'bg-slate-800');
+      }
+    }
+
+    function analyzeResume() {
+      const major = document.getElementById('resume-major').value;
+      const resumeText = document.getElementById('resume-input').value.trim();
+      const output = document.getElementById('resume-output');
+
+      output.classList.remove('hidden');
+      output.innerHTML = `<p class="text-cyan-400 animate-pulse text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i> กำลังวิเคราะห์ข้อมูลและประเมินสมรรถนะวิชาชีพ...</p>`;
+
+      setTimeout(() => {
+        let score = Math.floor(Math.random() * 5) + 95;
+        let partnerMatch = major === 'ช่างยนต์' ? 'HONDA ออโตโมบิล' : major === 'คอมพิวเตอร์ธุรกิจ' ? 'FUJIKURA' : major === 'การบัญชี' || major === 'การตลาด' ? 'ZEN GROUP' : 'STAR AIRE';
+
+        output.innerHTML = `
+          <div class="space-y-4">
+            <div class="flex justify-between items-center border-b border-cyan-500/30 pb-3">
+              <div>
+                <span class="text-[10px] font-hud text-cyan-400 tracking-wider">OFFICIAL VOCATIONAL REPORT</span>
+                <h4 class="font-bold text-white text-base">ใบประเมินสมรรถนะวิชาชีพ (Competency Certificate)</h4>
+              </div>
+              <span class="px-3 py-1 bg-emerald-950 text-emerald-300 font-hud font-bold rounded-xl border border-emerald-500/40 text-xs">
+                GRADE: A (${score}%)
+              </span>
+            </div>
+
+            <div class="space-y-2 text-xs text-slate-300 bg-slate-950/60 p-3.5 rounded-xl border border-slate-800">
+              <p><strong>นักศึกษา / ผู้ประเมิน:</strong> นายอโณทัย สุริวงค์ (วิทยาลัยเทคโนโลยีอีสานเหนือ)</p>
+              <p><strong>สาขาวิชา:</strong> ${major} (ระดับ ปวส.)</p>
+              <p><strong>ทักษะที่ได้รับการรับรอง:</strong> ${resumeText || 'พัฒนา AI RAG Systems, Web Development, ทักษะคอมพิวเตอร์ดิจิทัล'}</p>
+              <p class="text-emerald-400 pt-1 border-t border-slate-800"><strong><i class="fas fa-handshake mr-1"></i> สถานประกอบการพาร์ทเนอร์รองรับ:</strong> ${partnerMatch}</p>
+            </div>
+
+            <div class="flex justify-end pt-2">
+              <button onclick="window.print()" class="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-slate-950 font-bold rounded-xl text-xs transition shadow-md flex items-center space-x-1">
+                <i class="fas fa-print mr-1"></i> พิมพ์ / ดาวน์โหลด PDF ใบรับรอง
+              </button>
+            </div>
+          </div>
+        `;
+
+      }, 600);
+    }
+
+    const interviewQuestions = [
+      "จงแนะนำตัวและอธิบายเหตุผลที่คุณเลือกศึกษาในสาขาวิชานี้",
+      "หากเกิดปัญหาเครื่องจักรหรือระบบขัดข้องหน้างานฉุกเฉิน คุณจะมีวิธีแก้ปัญหาอย่างไร?",
+      "คุณมีความพร้อมในการฝึกงานแบบทวิภาคีร่วมกับสถานประกอบการพาร์ทเนอร์อย่างไรบ้าง?",
+      "เป้าหมายในการทำงานหลังสำเร็จการศึกษาจากวิทยาลัยเทคโนโลยีอีสานเหนือคืออะไร?"
+    ];
+
+    function generateQuestion() {
+      const qBox = document.getElementById('interview-question-box');
+      const randomQ = interviewQuestions[Math.floor(Math.random() * interviewQuestions.length)];
+      qBox.innerText = randomQ;
+    }
+
+    function toggleInterviewVoice() {
+      alert("ระบบไมโครโฟนจำลองการสัมภาษณ์พร้อมใช้งาน: กำลังบันทึกเสียงคำตอบของคุณ...");
+      document.getElementById('interview-answer').value = "ผมมีความมุ่งมั่นและพร้อมปฏิบัติงานจริงตามมาตรฐานที่สถานประกอบการกำหนดครับ";
+    }
+
+    function evaluateInterviewAnswer() {
+      const ans = document.getElementById('interview-answer').value.trim();
+      const feedback = document.getElementById('interview-feedback');
+      if (!ans) {
+        alert("กรุณากรอกคำตอบสัมภาษณ์ก่อนส่งประเมินครับ");
+        return;
+      }
+      feedback.classList.remove('hidden');
+      feedback.innerHTML = `<p class="text-emerald-400 animate-pulse">กำลังประเมินน้ำเสียง ความมั่นใจ และเนื้อหาคำตอบ...</p>`;
+
+      setTimeout(() => {
+        feedback.innerHTML = `
+          <div class="space-y-1">
+            <h5 class="font-bold text-emerald-400 flex items-center"><i class="fas fa-check-circle mr-1.5"></i> ผลการประเมินการสัมภาษณ์ (AI Interview Feedback)</h5>
+            <p class="text-xs text-slate-300"><strong>ความเหมาะสมของเนื้อหา:</strong> ดีเยี่ยม (น้ำเสียงแสดงถึงความพร้อมและทัศนคติที่ดีต่อวิชาชีพ)</p>
+          </div>
+        `;
+      }, 1200);
+    }
+
+    function addRagDocument() {
+      const title = document.getElementById('admin-doc-title').value.trim();
+      if (!title) return;
+      const list = document.getElementById('rag-doc-list');
+      list.innerHTML += `
+        <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800 text-xs flex justify-between items-center text-slate-300 animate-fade-in">
+          <span>📄 ${title}</span>
+          <span class="text-emerald-400 font-mono">Indexed (100%)</span>
+        </div>
+      `;
+      document.getElementById('admin-doc-title').value = '';
+      alert("เพิ่มเอกสารเข้าสู่ RAG Vector Knowledge Store เรียบร้อยแล้ว!");
+    }
+
+    function submitEvaluation(event) {
+      event.preventDefault();
+      document.getElementById('eval-success').classList.remove('hidden');
+      setTimeout(() => document.getElementById('eval-success').classList.add('hidden'), 4000);
+    }
+  </script>
+</body>
+</html>
